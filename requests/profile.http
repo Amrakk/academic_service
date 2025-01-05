@@ -1,0 +1,38 @@
+### GET 
+GET http://localhost:3010/api/v1
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+
+### GET WITH FILTER
+GET http://localhost:3010/api/v1/profiles?searchTerm=en
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+
+### GET BY ID 
+GET http://localhost:3010/api/v1/profiles/676ea760923eac34f6844043
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+
+### INSERT 
+POST http://localhost:3010/api/v1/profiles
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+Content-Type: application/json
+
+{
+}
+
+### UPDATE 
+PATCH http://localhost:3010/api/v1/profiles/6777687824ab2afd5c9a71e8
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+Content-Type: application/json
+
+{
+  "name": "Test Services"
+}
+
+### DELETE
+DELETE http://localhost:3010/api/v1/profiles/6777687824ab2afd5c9a71e8
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0

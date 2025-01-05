@@ -1,0 +1,26 @@
+{
+    "name": "communication",
+    "module": "src/index.ts",
+    "type": "module",
+    "scripts": {
+        "clean": "rimraf build",
+        "build": "bun run clean && tsc",
+        "build:node": "npm run clean && tsc",
+        "dev": "bun run --watch ./src/index.ts",
+        "start": "node --env-file=.env build/index.js"
+    },
+    "dependencies": {
+        "express": "^4.21.0",
+        "ioredis": "^5.4.1",
+        "mongooat": "^2.2.18"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "@types/express": "^4.17.21",
+        "@types/node": "^22.7.4",
+        "rimraf": "^6.0.1"
+    },
+    "peerDependencies": {
+        "typescript": "^5.0.0"
+    }
+}
