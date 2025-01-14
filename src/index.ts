@@ -27,11 +27,11 @@ app.on("close", async () => {
     process.exit(0);
 });
 
-app.listen(PORT, async () => {
-    await db.init();
-    await Redis.init();
-    await init();
+await db.init();
+await Redis.init();
+await init();
 
+app.listen(PORT, async () => {
     console.log(`\nServer is running on port ${PORT}`);
 });
 
