@@ -6,7 +6,7 @@ const classRouter = express.Router();
 
 classRouter.get("/:id", api.class.getById);
 
-classRouter.post("/", api.class.insert);
+classRouter.post("/:schoolId?", api.class.insert);
 classRouter.patch("/:id", api.class.updateById);
 classRouter.patch("/:id/avatar", imageUploader, api.class.updateAvatar);
 

@@ -109,9 +109,10 @@ export default class AccessControlService {
                 AccessControlService.registerRoles.Teacher,
             ],
         };
+
         const retry = async (retries: number): Promise<void> => {
             try {
-                return fetch(`${ACCESS_CONTROL_API_URL}/access/register`, {
+                return await fetch(`${ACCESS_CONTROL_API_URL}/access/register`, {
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -146,7 +147,7 @@ export default class AccessControlService {
             }
         };
 
-        await retry(3);
+        await retry(5);
     }
 
     public static async authorize(

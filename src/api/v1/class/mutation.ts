@@ -2,6 +2,7 @@ import { ObjectId } from "mongooat";
 import mongooat from "../../../database/db.js";
 import ApiController from "../../apiController.js";
 import ClassService from "../../../services/internal/class.js";
+import SchoolService from "../../../services/internal/school.js";
 import ProfileService from "../../../services/internal/profile.js";
 import AccessControlService from "../../../services/external/accessControl.js";
 import { GROUP_TYPE, PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
@@ -13,38 +14,54 @@ import ServiceResponseError from "../../../errors/ServiceResponseError.js";
 import type { IClass } from "../../../interfaces/database/class.js";
 import type { IReqClass, IReqProfile } from "../../../interfaces/api/request.js";
 import type { IReqRelationship } from "../../../interfaces/services/external/accessControl.js";
-import SchoolService from "../../../services/internal/school.js";
 
-export const insert = ApiController.callbackFactory<{}, { body: IReqClass.Insert }, IClass>({
+export const insert = ApiController.callbackFactory<
+    { schoolId?: string },
+    { body: IReqClass.Insert | IReqClass.Insert[] },
+    IClass[]
+>({
     action: "add-class",
     roleRelationshipPairs: [],
     toId: "*",
     callback: async (req, res, next) => {
         const session = mongooat.getBase().startSession();
         try {
-            const { name, avatarUrl, schoolId } = req.body;
+            const { body } = req;
+            const { schoolId } = req.params;
 
-            const classId = new ObjectId();
+            const classes = (Array.isArray(body) ? body : [body]).map((cls) => ({
+                ...cls,
+                _id: new ObjectId(),
+                schoolId,
+            }));
+
             const relationships: IReqRelationship.Upsert[] = [];
 
-            let insertedClass: IClass | undefined;
+            let insertedClasses: IClass[] = [];
             let creator: (IReqProfile.Insert & { _id: ObjectId }) | null = null;
 
             await session.withTransaction(async () => {
                 if (!schoolId) {
+                    if (classes.length > 1)
+                        throw new BadRequestError("Only one personal class can be created at a time");
+
                     // Case 1: Personal class
-                    creator = {
+                    const scopeCreator = {
                         _id: new ObjectId(),
                         userId: req.ctx.user._id,
                         displayName: "Creator",
                         roles: [PROFILE_ROLE.TEACHER],
                     };
 
-                    relationships.push({
-                        from: creator._id,
-                        to: classId,
-                        relationship: RELATIONSHIP.MANAGES,
-                    });
+                    creator = { ...scopeCreator };
+
+                    relationships.push(
+                        ...classes.map(({ _id }) => ({
+                            from: scopeCreator._id,
+                            to: _id,
+                            relationship: RELATIONSHIP.MANAGES,
+                        }))
+                    );
                 } else {
                     // Case 2: School class
                     const [executives, school] = await Promise.all([
@@ -64,40 +81,45 @@ export const insert = ApiController.callbackFactory<{}, { body: IReqClass.Insert
                     creator = { ...requestor, roles: AccessControlService.getRolesFromId(requestor.roles) };
 
                     relationships.push(
-                        ...executives.map(({ _id }) => ({ from: _id, to: classId, relationship: RELATIONSHIP.MANAGES }))
+                        ...executives.flatMap(({ _id }) =>
+                            classes.map((cls) => ({
+                                from: _id,
+                                to: cls._id,
+                                relationship: RELATIONSHIP.MANAGES,
+                            }))
+                        )
                     );
                 }
 
-                relationships.push({
-                    from: creator._id,
-                    to: classId,
-                    relationship: RELATIONSHIP.CREATOR,
-                });
+                const creatorId = creator._id;
+
+                relationships.push(
+                    ...classes.map(({ _id }) => ({
+                        from: creatorId,
+                        to: _id,
+                        relationship: RELATIONSHIP.CREATOR,
+                    }))
+                );
 
                 const [insertedClasses] = await Promise.all([
-                    ClassService.insert([{ _id: classId, name, avatarUrl, schoolId }], creator._id, { session }),
+                    ClassService.insert(classes, creator._id, { session }),
                     schoolId
                         ? undefined
                         : ProfileService.insert(
                               [creator],
-                              { groupId: classId, groupType: GROUP_TYPE.CLASS },
+                              { groupId: classes[0]._id, groupType: GROUP_TYPE.CLASS },
                               { session }
                           ),
                     AccessControlService.upsertRelationships(relationships),
                 ]);
 
-                insertedClass = { ...insertedClasses[0] };
+                insertedClasses.push(...insertedClasses);
             });
-
-            if (!insertedClass)
-                throw new ServiceResponseError("Academic Service", "Class: insert", "Failed to insert class", {
-                    body: req.body,
-                });
 
             return res.status(201).json({
                 code: RESPONSE_CODE.SUCCESS,
                 message: RESPONSE_MESSAGE.SUCCESS,
-                data: insertedClass,
+                data: insertedClasses,
             });
         } catch (err) {
             next(err);

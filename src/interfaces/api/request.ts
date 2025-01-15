@@ -57,7 +57,6 @@ export namespace IReqClass {
         _id?: string | ObjectId;
         name: string;
         avatarUrl?: string;
-        schoolId?: string | ObjectId;
     }
 
     export interface Update {
