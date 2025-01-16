@@ -1,11 +1,11 @@
 import ClassService from "./class.js";
 import SchoolService from "./school.js";
 import ImgbbService from "../external/imgbb.js";
-import { GROUP_TYPE, PROFILE_ROLE } from "../../constants.js";
 import { ZodObjectId, ObjectId } from "mongooat";
 import { ProfileModel } from "../../database/models/profile.js";
 import AccessControlService from "../external/accessControl.js";
 import { removeUndefinedKeys } from "../../utils/removeUndefinedKeys.js";
+import { GROUP_TYPE, PROFILE_ROLE, RELATIONSHIP } from "../../constants.js";
 
 import NotFoundError from "../../errors/NotFoundError.js";
 import BadRequestError from "../../errors/BadRequestError.js";
@@ -64,16 +64,38 @@ export default class ProfileService {
         const result = await ZodObjectId.safeParseAsync(groupId);
         if (result.error) throw new NotFoundError("Group not found");
 
+        let includeIds: (ObjectId | string)[] = [];
+        if (groupType === GROUP_TYPE.CLASS) {
+            const _class = await ClassService.getById(result.data);
+            if (!_class) throw new NotFoundError("Class not found");
+
+            // Case where group is school class
+            if (_class.schoolId) {
+                groupType = GROUP_TYPE.SCHOOL;
+                result.data = _class.schoolId;
+
+                includeIds.push(
+                    ...(
+                        await AccessControlService.getRelationshipsByTo(_class._id, {
+                            relationships: [RELATIONSHIP.MANAGES],
+                        })
+                    ).map(({ from }) => from)
+                );
+            }
+        }
+
         const filter = {
             groupType,
             groupId: result.data,
             ...(roles ? { roles: { $in: roles?.map((role) => AccessControlService.roles[role]._id) } } : {}),
         };
+        const profiles = await ProfileModel.find(filter, { session: option?.session, projection: { _displayName: 0 } });
+        if (includeIds.length > 0) profiles.filter(({ _id }) => includeIds.includes(_id));
 
-        return ProfileModel.find(filter, { session: option?.session, projection: { _displayName: 0 } });
+        return profiles;
     }
 
-    public static async getByUserId(userId: ObjectId, query?: IReqProfile.GetByUserId): Promise<IProfile[]> {
+    public static async getByUserId(userId: ObjectId, query?: IReqProfile.Query): Promise<IProfile[]> {
         const { roles } = query || {};
 
         const roleIds = roles?.map((role) => AccessControlService.roles[role]._id);

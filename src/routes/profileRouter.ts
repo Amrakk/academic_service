@@ -4,6 +4,7 @@ import { imageUploader } from "../middlewares/fileHandlers.js";
 
 const profileRouter = express.Router();
 
+profileRouter.get("/:groupType/:groupId", api.profile.getByGroup);
 profileRouter.get("/me", api.profile.getByUserId);
 profileRouter.get("/:id", api.profile.getById);
 

@@ -13,7 +13,7 @@ export interface ITimeBasedPagination {
 
 // Profile
 export namespace IReqProfile {
-    export interface GetByUserId {
+    export interface Query {
         roles?: PROFILE_ROLE[];
     }
 
