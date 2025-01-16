@@ -236,7 +236,7 @@ export default class AccessControlService {
             headers: {
                 "Content-Type": "application/json",
             },
-            method: "POST",
+            method: "GET",
         })
             .then((res) => res.json())
             .then((res: IResponse<IReqRelationship.Upsert[]>) => {
@@ -248,7 +248,7 @@ export default class AccessControlService {
                         res
                     );
 
-                return res.data;
+                return res.data ?? [];
             });
     }
 
@@ -261,7 +261,7 @@ export default class AccessControlService {
             headers: {
                 "Content-Type": "application/json",
             },
-            method: "POST",
+            method: "GET",
         })
             .then((res) => res.json())
             .then((res: IResponse<IRelationship[]>) => {
@@ -273,7 +273,7 @@ export default class AccessControlService {
                         res
                     );
 
-                return res.data;
+                return res.data ?? [];
             });
     }
 

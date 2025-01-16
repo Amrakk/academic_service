@@ -4,6 +4,7 @@ import { ObjectId, z, ZodObjectId } from "mongooat";
 import ClassService from "../../../services/internal/class.js";
 import SchoolService from "../../../services/internal/school.js";
 import ProfileService from "../../../services/internal/profile.js";
+import { groupTypeSchema } from "../../../database/models/profile.js";
 import InvitationService from "../../../services/internal/invitation.js";
 import AccessControlService from "../../../services/external/accessControl.js";
 import {
@@ -25,8 +26,8 @@ import type { IReqInvitation } from "../../../interfaces/api/request.js";
 
 const generateGroupCodeSchema = z.object({
     groupId: ZodObjectId,
-    groupType: z.nativeEnum(GROUP_TYPE),
-    newProfileRole: z.nativeEnum(PROFILE_ROLE),
+    groupType: groupTypeSchema,
+    newProfileRole: z.preprocess((val) => parseInt(`${val}`), z.nativeEnum(PROFILE_ROLE)),
     expireMinutes: z.number().int().positive().default(DEFAULT_CODE_EXPIRE_TIME),
 });
 
@@ -139,6 +140,7 @@ export const submitCode = ApiController.callbackFactory<{ code: string }, {}, IP
                     userId: requestor._id,
                 };
 
+                // TODO: if user exists, update relationship
                 if (schoolId) {
                     const insertedProfiles = await ProfileService.insert(
                         [insertData],

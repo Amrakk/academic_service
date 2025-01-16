@@ -11,7 +11,7 @@ export const getById = ApiController.callbackFactory<{ id: string }, {}, ISchool
     roleRelationshipPairs: [
         { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
         { role: PROFILE_ROLE.STUDENT, relationships: [RELATIONSHIP.ENROLLED_IN] },
-        { role: PROFILE_ROLE.PARENT, relationships: [RELATIONSHIP.ASSOCIATED_WITH] },
+        { role: PROFILE_ROLE.PARENT, relationships: [RELATIONSHIP.HAS_CHILD_IN] },
     ],
     toId: (req) => req.params.id,
     callback: async (req, res, next) => {

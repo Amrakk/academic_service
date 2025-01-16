@@ -4,7 +4,7 @@ import { ZodObjectId } from "mongooat";
 import { DEFAULT_PROFILE_AVATAR_URL, GROUP_TYPE } from "../../constants.js";
 import { toLowerNonAccentVietnamese } from "../../utils/removeDiacritics.js";
 
-export const groupTypeSchema = z.nativeEnum(GROUP_TYPE);
+export const groupTypeSchema = z.preprocess((val) => parseInt(`${val}`), z.nativeEnum(GROUP_TYPE));
 
 export const profileSchema = z.object({
     displayName: z.string().transform((val) => val.trim()),

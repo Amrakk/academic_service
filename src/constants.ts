@@ -138,8 +138,10 @@ export enum RELATIONSHIP {
     ASSIGNED_TO = "assigned-to",
 
     // PARENT
-    /** Mapped to groups (classes | schools) */
+    /** Mapped to schools */
     ASSOCIATED_WITH = "associated-with",
+    /** Mapped to classes */
+    HAS_CHILD_IN = "has-child-in",
     /** Mapped to students */
     PARENT_OF = "parent-of",
     /** Mapped to teachers or executives */

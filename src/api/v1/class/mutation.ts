@@ -37,7 +37,7 @@ export const insert = ApiController.callbackFactory<
 
             const relationships: IReqRelationship.Upsert[] = [];
 
-            let insertedClasses: IClass[] = [];
+            let returnedClasses: IClass[] = [];
             let creator: (IReqProfile.Insert & { _id: ObjectId }) | null = null;
 
             await session.withTransaction(async () => {
@@ -113,13 +113,13 @@ export const insert = ApiController.callbackFactory<
                     AccessControlService.upsertRelationships(relationships),
                 ]);
 
-                insertedClasses.push(...insertedClasses);
+                returnedClasses.push(...insertedClasses);
             });
 
             return res.status(201).json({
                 code: RESPONSE_CODE.SUCCESS,
                 message: RESPONSE_MESSAGE.SUCCESS,
-                data: insertedClasses,
+                data: returnedClasses,
             });
         } catch (err) {
             next(err);
@@ -153,7 +153,7 @@ export const updateById = ApiController.callbackFactory<{ id: string }, { body: 
 export const updateAvatar = ApiController.callbackFactory<{ id: string }, {}, { url: string }>({
     action: "update-class",
     roleRelationshipPairs: [
-        { role: PROFILE_ROLE.EXECUTIVE, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
+        { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
     ],
     toId: async (req) => req.params.id,
     callback: async (req, res, next) => {

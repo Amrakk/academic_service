@@ -132,6 +132,8 @@ export const updateById = ApiController.callbackFactory<{ id: string }, { body: 
             role: PROFILE_ROLE.TEACHER,
             relationships: [RELATIONSHIP.OWN, RELATIONSHIP.TEACHES, RELATIONSHIP.SUPERVISES_PARENTS],
         },
+        { role: PROFILE_ROLE.STUDENT, relationships: [RELATIONSHIP.OWN] },
+        { role: PROFILE_ROLE.PARENT, relationships: [RELATIONSHIP.OWN] },
     ],
     toId: async (req) => req.params.id,
     callback: async (req, res, next) => {
@@ -226,6 +228,8 @@ export const updateAvatar = ApiController.callbackFactory<{ id: string }, {}, { 
             role: PROFILE_ROLE.TEACHER,
             relationships: [RELATIONSHIP.OWN, RELATIONSHIP.TEACHES, RELATIONSHIP.SUPERVISES_PARENTS],
         },
+        { role: PROFILE_ROLE.STUDENT, relationships: [RELATIONSHIP.OWN] },
+        { role: PROFILE_ROLE.PARENT, relationships: [RELATIONSHIP.OWN] },
     ],
     toId: async (req) => req.params.id,
     callback: async (req, res, next) => {
