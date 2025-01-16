@@ -223,3 +223,59 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ICla
         }
     },
 });
+
+export const bindRelationships = ApiController.callbackFactory<
+    { classId: string },
+    { body: IReqClass.EditRelationships },
+    {}
+>({
+    action: "bind-relationships-to-school-class",
+    roleRelationshipPairs: [
+        { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
+    ],
+    toId: async (req) => req.params.classId,
+    callback: async (req, res, next) => {
+        try {
+            const { classId } = req.params;
+            const _class = await ClassService.getById(classId);
+
+            if (!_class) throw new BadRequestError("Class not found", { classId });
+            if (!_class.schoolId) throw new BadRequestError("Personal class cannot bind relationships", { classId });
+
+            const profiles = await ProfileService.getByIds(req.body.profiles);
+            await ProfileService.establishRels(profiles, GROUP_TYPE.CLASS, _class._id);
+
+            return res.status(200).json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS });
+        } catch (err) {
+            next(err);
+        }
+    },
+});
+
+export const unbindRelationships = ApiController.callbackFactory<
+    { classId: string },
+    { body: IReqClass.EditRelationships },
+    {}
+>({
+    action: "unbind-relationships-to-school-class",
+    roleRelationshipPairs: [
+        { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
+    ],
+    toId: async (req) => req.params.classId,
+    callback: async (req, res, next) => {
+        try {
+            const { classId } = req.params;
+            const _class = await ClassService.getById(classId);
+
+            if (!_class) throw new BadRequestError("Class not found", { classId });
+            if (!_class.schoolId) throw new BadRequestError("Personal class cannot unbind relationships", { classId });
+
+            const profiles = await ProfileService.getByIds(req.body.profiles);
+            await ProfileService.unbindRels(profiles, GROUP_TYPE.CLASS, _class._id);
+
+            return res.status(200).json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS });
+        } catch (err) {
+            next(err);
+        }
+    },
+});

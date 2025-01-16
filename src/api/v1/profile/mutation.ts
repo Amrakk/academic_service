@@ -74,36 +74,7 @@ export const insert = ApiController.callbackFactory<
             let profiles: IProfile[] = [];
             await session.withTransaction(async () => {
                 const insertedProfiles = await ProfileService.insert(insertData, result.data, { session });
-
-                const profileRoles = insertedProfiles.map(({ _id, roles }) => ({
-                    _id: _id,
-                    roles: AccessControlService.getRolesFromId(roles),
-                }));
-
-                switch (groupType) {
-                    case GROUP_TYPE.SCHOOL: {
-                        const profileData = profileRoles.map(({ _id, roles }) => ({
-                            entityId: _id,
-                            relationship: SchoolService.getRelationshipByRole(
-                                AccessControlService.getHighestPriorityRole(roles)
-                            ),
-                        }));
-                        await SchoolService.establishRels(profileData, groupId);
-                        break;
-                    }
-                    case GROUP_TYPE.CLASS: {
-                        const profileData = profileRoles.map(({ _id, roles }) => ({
-                            entityId: _id,
-                            relationship: ClassService.getRelationshipByRole(
-                                AccessControlService.getHighestPriorityRole(roles)
-                            ),
-                        }));
-                        await ClassService.establishRels(profileData, groupId);
-                        break;
-                    }
-                    default:
-                        throw new BadRequestError("Invalid groupType");
-                }
+                await ProfileService.establishRels(insertedProfiles, groupType, groupId);
 
                 profiles = [...insertedProfiles];
             });

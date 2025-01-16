@@ -1,7 +1,7 @@
 import ClassService from "./class.js";
 import SchoolService from "./school.js";
 import ImgbbService from "../external/imgbb.js";
-import { ZodObjectId, ObjectId } from "mongooat";
+import { ZodObjectId, ObjectId, z } from "mongooat";
 import { ProfileModel } from "../../database/models/profile.js";
 import AccessControlService from "../external/accessControl.js";
 import { removeUndefinedKeys } from "../../utils/removeUndefinedKeys.js";
@@ -47,9 +47,52 @@ export default class ProfileService {
         }
     }
 
+    public static async unbindRels(profiles: IProfile[], groupType: GROUP_TYPE, groupId: ObjectId): Promise<void> {
+        const profileRoles = profiles.map(({ _id, roles }) => ({
+            _id: _id,
+            roles: AccessControlService.getRolesFromId(roles),
+        }));
+
+        switch (groupType) {
+            case GROUP_TYPE.SCHOOL: {
+                const profileData = profileRoles.map(({ _id, roles }) => ({
+                    entityId: _id,
+                    relationship: SchoolService.getRelationshipByRole(
+                        AccessControlService.getHighestPriorityRole(roles)
+                    ),
+                }));
+                await SchoolService.unbindRels(profileData, groupId);
+                break;
+            }
+            case GROUP_TYPE.CLASS: {
+                const profileData = profileRoles.map(({ _id, roles }) => ({
+                    entityId: _id,
+                    relationship: ClassService.getRelationshipByRole(
+                        AccessControlService.getHighestPriorityRole(roles)
+                    ),
+                }));
+                await ClassService.unbindRels(profileData, groupId);
+                break;
+            }
+            default:
+                throw new BadRequestError("Invalid groupType");
+        }
+    }
+
     // Query
-    public static async getById(id: string | ObjectId): Promise<IProfile | null> {
-        const result = await ZodObjectId.safeParseAsync(id);
+    public static async getByIds(id: string | ObjectId): Promise<IProfile | null>;
+    public static async getByIds(ids: (string | ObjectId)[]): Promise<IProfile[]>;
+    public static async getByIds(
+        ids: string | ObjectId | (string | ObjectId)[]
+    ): Promise<IProfile | null | IProfile[]> {
+        if (Array.isArray(ids)) {
+            const result = await z.array(ZodObjectId).safeParseAsync(ids);
+            if (result.error) throw new NotFoundError("Profile not found");
+
+            return ProfileModel.find({ _id: { $in: result.data } }, { projection: { _displayName: 0 } });
+        }
+
+        const result = await ZodObjectId.safeParseAsync(ids);
         if (result.error) throw new NotFoundError("Profile not found");
 
         return ProfileModel.findById(result.data, { projection: { _displayName: 0 } });

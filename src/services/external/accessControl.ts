@@ -156,7 +156,7 @@ export default class AccessControlService {
         action: string
     ): Promise<boolean> {
         try {
-            const from = await ProfileService.getById(fromId);
+            const from = await ProfileService.getByIds(fromId);
             if (!from) return false;
 
             return fetch(`${ACCESS_CONTROL_API_URL}/access/authorize`, {

@@ -63,6 +63,10 @@ export namespace IReqClass {
         name?: string;
         avatarUrl?: string;
     }
+
+    export interface EditRelationships {
+        profiles: (string | ObjectId)[];
+    }
 }
 
 // Invitation

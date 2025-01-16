@@ -104,7 +104,7 @@ export const getById = ApiController.callbackFactory<{ id: string }, {}, IProfil
         try {
             const { id } = req.params;
 
-            const profile = await ProfileService.getById(id);
+            const profile = await ProfileService.getByIds(id);
             if (!profile) throw new NotFoundError("Profile not found");
 
             return res.status(200).json({
