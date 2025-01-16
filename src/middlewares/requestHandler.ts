@@ -9,6 +9,7 @@ import ProfileService from "../services/internal/profile.js";
 const schema = z.object({
     user: z.object({
         _id: ZodObjectId,
+        name: z.string(),
         role: z.preprocess((val) => parseInt(`${val}`), z.nativeEnum(USER_ROLE)),
     }),
     profileId: ZodObjectId.optional(),
@@ -19,12 +20,13 @@ export async function requestHandler(req: Request, res: Response, next: NextFunc
         const {
             "x-error": error,
             "x-user-id": userId,
+            "x-user-name": name,
             "x-user-role": userRole,
             "x-profile-id": profileId,
         } = req.headers;
         if (error) throw new ForbiddenError();
 
-        const result = await schema.safeParseAsync({ user: { _id: userId, role: userRole }, profileId });
+        const result = await schema.safeParseAsync({ user: { _id: userId, role: userRole, name }, profileId });
         if (result.error) throw new ForbiddenError();
 
         req.ctx = result.data;

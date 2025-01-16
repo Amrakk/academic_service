@@ -1,3 +1,5 @@
+import ms from "ms";
+
 /******************/
 /******************/
 /**  ENVIRONMENT **/
@@ -16,8 +18,11 @@ export const CLIENT_URL = process.env.CLIENT_URL!;
 // LIMITS
 export const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE!);
 export const MAX_IMAGE_SIZE = parseInt(process.env.MAX_IMAGE_SIZE!);
+export const MAX_CODE_GENERATION_ATTEMPTS = parseInt(process.env.MAX_CODE_GENERATION_ATTEMPTS!);
 
 // DEFAULT
+export const DEFAULT_CODE_LENGTH = parseInt(process.env.DEFAULT_CODE_LENGTH!);
+export const DEFAULT_CODE_EXPIRE_TIME = ms(process.env.DEFAULT_CODE_EXPIRE_TIME!);
 export const DEFAULT_CLASS_AVATAR_URL = process.env.DEFAULT_CLASS_AVATAR_URL!;
 export const DEFAULT_SCHOOL_AVATAR_URL = process.env.DEFAULT_SCHOOL_AVATAR_URL!;
 export const DEFAULT_PROFILE_AVATAR_URL = process.env.DEFAULT_PROFILE_AVATAR_URL!;

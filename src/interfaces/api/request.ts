@@ -1,5 +1,5 @@
 import type { ObjectId } from "mongooat";
-import type { PROFILE_ROLE } from "../../constants.js";
+import type { GROUP_TYPE, PROFILE_ROLE } from "../../constants.js";
 
 export interface IOffsetPagination {
     page?: number;
@@ -62,5 +62,15 @@ export namespace IReqClass {
     export interface Update {
         name?: string;
         avatarUrl?: string;
+    }
+}
+
+// Invitation
+export namespace IReqInvitation {
+    export interface GetGroupCode {
+        groupId: string | ObjectId;
+        groupType: GROUP_TYPE;
+        newProfileRole: PROFILE_ROLE;
+        expireMinutes?: number;
     }
 }

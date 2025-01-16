@@ -79,16 +79,31 @@ export const insert = ApiController.callbackFactory<
                     _id: _id,
                     roles: AccessControlService.getRolesFromId(roles),
                 }));
-                const profileData = profileRoles.map(({ _id, roles }) => ({
-                    entityId: _id,
-                    relationship: SchoolService.getRelationshipByRole(
-                        AccessControlService.getHighestPriorityRole(roles)
-                    ),
-                }));
 
-                if (groupType === GROUP_TYPE.SCHOOL) await SchoolService.establishRels(profileData, groupId);
-                else if (groupType === GROUP_TYPE.CLASS) await ClassService.establishRels(profileData, groupId);
-                else throw new BadRequestError("Invalid groupType");
+                switch (groupType) {
+                    case GROUP_TYPE.SCHOOL: {
+                        const profileData = profileRoles.map(({ _id, roles }) => ({
+                            entityId: _id,
+                            relationship: SchoolService.getRelationshipByRole(
+                                AccessControlService.getHighestPriorityRole(roles)
+                            ),
+                        }));
+                        await SchoolService.establishRels(profileData, groupId);
+                        break;
+                    }
+                    case GROUP_TYPE.CLASS: {
+                        const profileData = profileRoles.map(({ _id, roles }) => ({
+                            entityId: _id,
+                            relationship: ClassService.getRelationshipByRole(
+                                AccessControlService.getHighestPriorityRole(roles)
+                            ),
+                        }));
+                        await ClassService.establishRels(profileData, groupId);
+                        break;
+                    }
+                    default:
+                        throw new BadRequestError("Invalid groupType");
+                }
 
                 profiles = [...insertedProfiles];
             });

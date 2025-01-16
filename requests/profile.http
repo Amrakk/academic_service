@@ -2,22 +2,26 @@
 GET http://localhost:3010/api/v1/profiles/me
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 
 ### GET BY USER ID WITH ROLES QUERY
 GET http://localhost:3010/api/v1/profiles/me?roles=Parent&roles=Executive
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 
 ### GET BY ID 
 GET http://localhost:3010/api/v1/profiles/676ea760923eac34f6844043
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 x-profile-id: 6766a7b0f98d0442e37d8313
 
 ### INSERT 
 POST http://localhost:3010/api/v1/profiles
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 x-profile-id: 6766a7b0f98d0442e37d8313
 Content-Type: application/json
 
@@ -32,6 +36,7 @@ Content-Type: application/json
 PATCH http://localhost:3010/api/v1/profiles/6777687824ab2afd5c9a71e8
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 x-profile-id: 6766a7b0f98d0442e37d8313
 Content-Type: application/json
 
@@ -43,6 +48,7 @@ Content-Type: application/json
 PATCH http://localhost:3010/api/v1/profiles/670c9b7b0f3be7cd0ee0b313/avatar
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 x-profile-id: 6766a7b0f98d0442e37d8313
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
@@ -57,4 +63,5 @@ Content-Type: image/jpeg
 DELETE http://localhost:3010/api/v1/profiles/6777687824ab2afd5c9a71e8
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 x-profile-id: 6766a7b0f98d0442e37d8313

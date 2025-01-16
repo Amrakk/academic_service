@@ -1,3 +1,5 @@
+import ClassService from "./class.js";
+import SchoolService from "./school.js";
 import ImgbbService from "../external/imgbb.js";
 import { GROUP_TYPE, PROFILE_ROLE } from "../../constants.js";
 import { ZodObjectId, ObjectId } from "mongooat";
@@ -6,12 +8,45 @@ import AccessControlService from "../external/accessControl.js";
 import { removeUndefinedKeys } from "../../utils/removeUndefinedKeys.js";
 
 import NotFoundError from "../../errors/NotFoundError.js";
+import BadRequestError from "../../errors/BadRequestError.js";
 
 import type { ClientSession } from "mongodb";
 import type { IReqProfile } from "../../interfaces/api/request.js";
 import type { IProfile } from "../../interfaces/database/profile.js";
 
 export default class ProfileService {
+    public static async establishRels(profiles: IProfile[], groupType: GROUP_TYPE, groupId: ObjectId): Promise<void> {
+        const profileRoles = profiles.map(({ _id, roles }) => ({
+            _id: _id,
+            roles: AccessControlService.getRolesFromId(roles),
+        }));
+
+        switch (groupType) {
+            case GROUP_TYPE.SCHOOL: {
+                const profileData = profileRoles.map(({ _id, roles }) => ({
+                    entityId: _id,
+                    relationship: SchoolService.getRelationshipByRole(
+                        AccessControlService.getHighestPriorityRole(roles)
+                    ),
+                }));
+                await SchoolService.establishRels(profileData, groupId);
+                break;
+            }
+            case GROUP_TYPE.CLASS: {
+                const profileData = profileRoles.map(({ _id, roles }) => ({
+                    entityId: _id,
+                    relationship: ClassService.getRelationshipByRole(
+                        AccessControlService.getHighestPriorityRole(roles)
+                    ),
+                }));
+                await ClassService.establishRels(profileData, groupId);
+                break;
+            }
+            default:
+                throw new BadRequestError("Invalid groupType");
+        }
+    }
+
     // Query
     public static async getById(id: string | ObjectId): Promise<IProfile | null> {
         const result = await ZodObjectId.safeParseAsync(id);
