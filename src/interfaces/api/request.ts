@@ -77,4 +77,19 @@ export namespace IReqInvitation {
         newProfileRole: PROFILE_ROLE;
         expireMinutes?: number;
     }
+
+    export interface SendInvitationMails {
+        emails: string[];
+        groupId: string | ObjectId;
+        groupType: GROUP_TYPE;
+        role: PROFILE_ROLE;
+        profileId?: string | ObjectId;
+        expireMinutes?: number;
+    }
+
+    export interface RemoveInvitation {
+        email: string;
+        groupId: string | ObjectId;
+        groupType: GROUP_TYPE;
+    }
 }

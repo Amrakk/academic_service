@@ -23,6 +23,7 @@ export const MAX_CODE_GENERATION_ATTEMPTS = parseInt(process.env.MAX_CODE_GENERA
 // DEFAULT
 export const DEFAULT_CODE_LENGTH = parseInt(process.env.DEFAULT_CODE_LENGTH!);
 export const DEFAULT_CODE_EXPIRE_TIME = ms(process.env.DEFAULT_CODE_EXPIRE_TIME!);
+export const DEFAULT_INVITATION_MAIL_EXPIRE_TIME = ms(process.env.DEFAULT_INVITATION_MAIL_EXPIRE_TIME!);
 export const DEFAULT_CLASS_AVATAR_URL = process.env.DEFAULT_CLASS_AVATAR_URL!;
 export const DEFAULT_SCHOOL_AVATAR_URL = process.env.DEFAULT_SCHOOL_AVATAR_URL!;
 export const DEFAULT_PROFILE_AVATAR_URL = process.env.DEFAULT_PROFILE_AVATAR_URL!;
@@ -59,6 +60,7 @@ export enum RESPONSE_CODE {
     BAD_REQUEST = 5,
     VALIDATION_ERROR = 8,
     TOO_MANY_REQUESTS = 9,
+    CONFLICT = 29,
 
     SERVICE_UNAVAILABLE = 99,
     INTERNAL_SERVER_ERROR = 100,
@@ -72,6 +74,7 @@ export enum RESPONSE_MESSAGE {
     BAD_REQUEST = "The request could not be understood or was missing required parameters",
     VALIDATION_ERROR = "Input validation failed! Please check your data",
     TOO_MANY_REQUESTS = "Too many requests! Please try again later",
+    CONFLICT = "The request could not be completed due to a conflict with the current state of the target resource",
 
     SERVICE_UNAVAILABLE = "Service is temporarily unavailable! Please try again later",
     INTERNAL_SERVER_ERROR = "An unexpected error occurred! Please try again later.",
