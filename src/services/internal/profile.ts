@@ -1,20 +1,111 @@
+import ClassService from "./class.js";
+import SchoolService from "./school.js";
 import ImgbbService from "../external/imgbb.js";
-import { GROUP_TYPE, PROFILE_ROLE } from "../../constants.js";
-import { ZodObjectId, ObjectId } from "mongooat";
+import { ZodObjectId, ObjectId, z } from "mongooat";
 import { ProfileModel } from "../../database/models/profile.js";
 import AccessControlService from "../external/accessControl.js";
 import { removeUndefinedKeys } from "../../utils/removeUndefinedKeys.js";
+import { GROUP_TYPE, PROFILE_ROLE, RELATIONSHIP } from "../../constants.js";
 
 import NotFoundError from "../../errors/NotFoundError.js";
+import BadRequestError from "../../errors/BadRequestError.js";
 
 import type { ClientSession } from "mongodb";
 import type { IReqProfile } from "../../interfaces/api/request.js";
 import type { IProfile } from "../../interfaces/database/profile.js";
 
 export default class ProfileService {
+    public static async establishRels(profiles: IProfile[], groupType: GROUP_TYPE, groupId: ObjectId): Promise<void> {
+        const profileRoles = profiles.map(({ _id, roles }) => ({
+            _id: _id,
+            roles: AccessControlService.getRolesFromId(roles),
+        }));
+
+        switch (groupType) {
+            case GROUP_TYPE.SCHOOL: {
+                const profileData = profileRoles.map(({ _id, roles }) => ({
+                    entityId: _id,
+                    relationship: SchoolService.getRelationshipByRole(
+                        AccessControlService.getHighestPriorityRole(roles)
+                    ),
+                }));
+                await SchoolService.establishRels(profileData, groupId);
+                break;
+            }
+            case GROUP_TYPE.CLASS: {
+                const profileData = profileRoles.map(({ _id, roles }) => ({
+                    entityId: _id,
+                    relationship: ClassService.getRelationshipByRole(
+                        AccessControlService.getHighestPriorityRole(roles)
+                    ),
+                }));
+                await ClassService.establishRels(profileData, groupId);
+                break;
+            }
+            default:
+                throw new BadRequestError("Invalid groupType");
+        }
+    }
+
+    public static async unbindRels(profiles: IProfile[], groupType: GROUP_TYPE, groupId: ObjectId): Promise<void> {
+        const profileRoles = profiles.map(({ _id, roles }) => ({
+            _id: _id,
+            roles: AccessControlService.getRolesFromId(roles),
+        }));
+
+        switch (groupType) {
+            case GROUP_TYPE.SCHOOL: {
+                const profileData = profileRoles.map(({ _id, roles }) => ({
+                    entityId: _id,
+                    relationship: SchoolService.getRelationshipByRole(
+                        AccessControlService.getHighestPriorityRole(roles)
+                    ),
+                }));
+                await SchoolService.unbindRels(profileData, groupId);
+                break;
+            }
+            case GROUP_TYPE.CLASS: {
+                const profileData = profileRoles.map(({ _id, roles }) => ({
+                    entityId: _id,
+                    relationship: ClassService.getRelationshipByRole(
+                        AccessControlService.getHighestPriorityRole(roles)
+                    ),
+                }));
+                await ClassService.unbindRels(profileData, groupId);
+                break;
+            }
+            default:
+                throw new BadRequestError("Invalid groupType");
+        }
+    }
+
     // Query
-    public static async getById(id: string | ObjectId): Promise<IProfile | null> {
-        const result = await ZodObjectId.safeParseAsync(id);
+    public static async getByUserGroupIds(
+        userId: string | ObjectId,
+        groupId: string | ObjectId
+    ): Promise<IProfile | null> {
+        const result = await ZodObjectId.safeParseAsync(userId);
+        if (result.error) throw new NotFoundError("User not found");
+
+        const result2 = await ZodObjectId.safeParseAsync(groupId);
+        if (result2.error) throw new NotFoundError("Group not found");
+
+        return ProfileModel.findOne({ userId: result.data, groupId: result2.data });
+    }
+
+    public static async getByIds(id: string | ObjectId): Promise<IProfile | null>;
+    public static async getByIds(ids: (string | ObjectId)[]): Promise<IProfile[]>;
+    public static async getByIds(
+        ids: string | ObjectId | (string | ObjectId)[]
+    ): Promise<IProfile | null | IProfile[]> {
+        if (Array.isArray(ids)) {
+            const result = await z.array(ZodObjectId).safeParseAsync(ids);
+            if (result.error) throw new NotFoundError("Profile not found");
+
+            return ProfileModel.find({ _id: { $in: result.data } }, { projection: { _displayName: 0 } });
+        }
+
+        const result = await ZodObjectId.safeParseAsync(ids);
         if (result.error) throw new NotFoundError("Profile not found");
 
         return ProfileModel.findById(result.data, { projection: { _displayName: 0 } });
@@ -29,16 +120,38 @@ export default class ProfileService {
         const result = await ZodObjectId.safeParseAsync(groupId);
         if (result.error) throw new NotFoundError("Group not found");
 
+        let includeIds: (ObjectId | string)[] = [];
+        if (groupType === GROUP_TYPE.CLASS) {
+            const _class = await ClassService.getById(result.data);
+            if (!_class) throw new NotFoundError("Class not found");
+
+            // Case where group is school class
+            if (_class.schoolId) {
+                groupType = GROUP_TYPE.SCHOOL;
+                result.data = _class.schoolId;
+
+                includeIds.push(
+                    ...(
+                        await AccessControlService.getRelationshipsByTo(_class._id, {
+                            relationships: [RELATIONSHIP.MANAGES],
+                        })
+                    ).map(({ from }) => from)
+                );
+            }
+        }
+
         const filter = {
             groupType,
             groupId: result.data,
             ...(roles ? { roles: { $in: roles?.map((role) => AccessControlService.roles[role]._id) } } : {}),
         };
+        const profiles = await ProfileModel.find(filter, { session: option?.session, projection: { _displayName: 0 } });
+        if (includeIds.length > 0) profiles.filter(({ _id }) => includeIds.includes(_id));
 
-        return ProfileModel.find(filter, { session: option?.session, projection: { _displayName: 0 } });
+        return profiles;
     }
 
-    public static async getByUserId(userId: ObjectId, query?: IReqProfile.GetByUserId): Promise<IProfile[]> {
+    public static async getByUserId(userId: ObjectId, query?: IReqProfile.Query): Promise<IProfile[]> {
         const { roles } = query || {};
 
         const roleIds = roles?.map((role) => AccessControlService.roles[role]._id);

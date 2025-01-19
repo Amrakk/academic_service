@@ -37,7 +37,7 @@ export const insert = ApiController.callbackFactory<
 
             const relationships: IReqRelationship.Upsert[] = [];
 
-            let insertedClasses: IClass[] = [];
+            let returnedClasses: IClass[] = [];
             let creator: (IReqProfile.Insert & { _id: ObjectId }) | null = null;
 
             await session.withTransaction(async () => {
@@ -113,13 +113,13 @@ export const insert = ApiController.callbackFactory<
                     AccessControlService.upsertRelationships(relationships),
                 ]);
 
-                insertedClasses.push(...insertedClasses);
+                returnedClasses.push(...insertedClasses);
             });
 
             return res.status(201).json({
                 code: RESPONSE_CODE.SUCCESS,
                 message: RESPONSE_MESSAGE.SUCCESS,
-                data: insertedClasses,
+                data: returnedClasses,
             });
         } catch (err) {
             next(err);
@@ -153,7 +153,7 @@ export const updateById = ApiController.callbackFactory<{ id: string }, { body: 
 export const updateAvatar = ApiController.callbackFactory<{ id: string }, {}, { url: string }>({
     action: "update-class",
     roleRelationshipPairs: [
-        { role: PROFILE_ROLE.EXECUTIVE, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
+        { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
     ],
     toId: async (req) => req.params.id,
     callback: async (req, res, next) => {
@@ -220,6 +220,62 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ICla
             next(err);
         } finally {
             session.endSession();
+        }
+    },
+});
+
+export const bindRelationships = ApiController.callbackFactory<
+    { classId: string },
+    { body: IReqClass.EditRelationships },
+    {}
+>({
+    action: "bind-relationships-to-school-class",
+    roleRelationshipPairs: [
+        { role: PROFILE_ROLE.EXECUTIVE, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
+    ],
+    toId: async (req) => req.params.classId,
+    callback: async (req, res, next) => {
+        try {
+            const { classId } = req.params;
+            const _class = await ClassService.getById(classId);
+
+            if (!_class) throw new BadRequestError("Class not found", { classId });
+            if (!_class.schoolId) throw new BadRequestError("Personal class cannot bind relationships", { classId });
+
+            const profiles = await ProfileService.getByIds(req.body.profiles);
+            await ProfileService.establishRels(profiles, GROUP_TYPE.CLASS, _class._id);
+
+            return res.status(200).json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS });
+        } catch (err) {
+            next(err);
+        }
+    },
+});
+
+export const unbindRelationships = ApiController.callbackFactory<
+    { classId: string },
+    { body: IReqClass.EditRelationships },
+    {}
+>({
+    action: "unbind-relationships-to-school-class",
+    roleRelationshipPairs: [
+        { role: PROFILE_ROLE.EXECUTIVE, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
+    ],
+    toId: async (req) => req.params.classId,
+    callback: async (req, res, next) => {
+        try {
+            const { classId } = req.params;
+            const _class = await ClassService.getById(classId);
+
+            if (!_class) throw new BadRequestError("Class not found", { classId });
+            if (!_class.schoolId) throw new BadRequestError("Personal class cannot unbind relationships", { classId });
+
+            const profiles = await ProfileService.getByIds(req.body.profiles);
+            await ProfileService.unbindRels(profiles, GROUP_TYPE.CLASS, _class._id);
+
+            return res.status(200).json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS });
+        } catch (err) {
+            next(err);
         }
     },
 });

@@ -74,21 +74,7 @@ export const insert = ApiController.callbackFactory<
             let profiles: IProfile[] = [];
             await session.withTransaction(async () => {
                 const insertedProfiles = await ProfileService.insert(insertData, result.data, { session });
-
-                const profileRoles = insertedProfiles.map(({ _id, roles }) => ({
-                    _id: _id,
-                    roles: AccessControlService.getRolesFromId(roles),
-                }));
-                const profileData = profileRoles.map(({ _id, roles }) => ({
-                    entityId: _id,
-                    relationship: SchoolService.getRelationshipByRole(
-                        AccessControlService.getHighestPriorityRole(roles)
-                    ),
-                }));
-
-                if (groupType === GROUP_TYPE.SCHOOL) await SchoolService.establishRels(profileData, groupId);
-                else if (groupType === GROUP_TYPE.CLASS) await ClassService.establishRels(profileData, groupId);
-                else throw new BadRequestError("Invalid groupType");
+                await ProfileService.establishRels(insertedProfiles, groupType, groupId);
 
                 profiles = [...insertedProfiles];
             });
@@ -117,6 +103,8 @@ export const updateById = ApiController.callbackFactory<{ id: string }, { body: 
             role: PROFILE_ROLE.TEACHER,
             relationships: [RELATIONSHIP.OWN, RELATIONSHIP.TEACHES, RELATIONSHIP.SUPERVISES_PARENTS],
         },
+        { role: PROFILE_ROLE.STUDENT, relationships: [RELATIONSHIP.OWN] },
+        { role: PROFILE_ROLE.PARENT, relationships: [RELATIONSHIP.OWN] },
     ],
     toId: async (req) => req.params.id,
     callback: async (req, res, next) => {
@@ -211,6 +199,8 @@ export const updateAvatar = ApiController.callbackFactory<{ id: string }, {}, { 
             role: PROFILE_ROLE.TEACHER,
             relationships: [RELATIONSHIP.OWN, RELATIONSHIP.TEACHES, RELATIONSHIP.SUPERVISES_PARENTS],
         },
+        { role: PROFILE_ROLE.STUDENT, relationships: [RELATIONSHIP.OWN] },
+        { role: PROFILE_ROLE.PARENT, relationships: [RELATIONSHIP.OWN] },
     ],
     toId: async (req) => req.params.id,
     callback: async (req, res, next) => {

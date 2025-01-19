@@ -33,7 +33,7 @@ export default class ClassService {
             case PROFILE_ROLE.STUDENT:
                 return RELATIONSHIP.ENROLLED_IN;
             case PROFILE_ROLE.PARENT:
-                return RELATIONSHIP.ASSOCIATED_WITH;
+                return RELATIONSHIP.HAS_CHILD_IN;
             default:
                 throw new ServiceResponseError("ClassService", "getRelationshipByRole", "Invalid role", { role });
         }

@@ -2,12 +2,14 @@
 GET http://localhost:3010/api/v1/classes/67866064fc3e7e1a6cdea4cb
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 1
+x-user-name: Test User
 x-profile-id: 677fd68bffe8b0fae62868b3
 
 ### INSERT PERSONAL CLASS
 POST http://localhost:3010/api/v1/classes
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 Content-Type: application/json
 
 {
@@ -19,6 +21,7 @@ Content-Type: application/json
 POST http://localhost:3010/api/v1/classes/67866064fc3e7e1a6cdea4cb
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 Content-Type: application/json
 
 {
@@ -30,6 +33,7 @@ Content-Type: application/json
 PATCH http://localhost:3010/api/v1/classes/67866064fc3e7e1a6cdea4cb
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 x-profile-id: 677fd68bffe8b0fae62868b3
 Content-Type: application/json
 
@@ -41,6 +45,7 @@ Content-Type: application/json
 PATCH http://localhost:3010/api/v1/classes/670c9b7b0f3be7cd0ee0b313/avatar
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 x-profile-id: 677fd68bffe8b0fae62868b3
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
@@ -55,4 +60,5 @@ Content-Type: image/jpeg
 DELETE http://localhost:3010/api/v1/classes/67866064fc3e7e1a6cdea4cb
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
+x-user-name: Test User
 x-profile-id: 677fd68bffe8b0fae62868b3

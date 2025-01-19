@@ -6,7 +6,7 @@ declare global {
     namespace Express {
         interface Request {
             ctx: {
-                user: { _id: ObjectId; role: USER_ROLE };
+                user: { _id: ObjectId; role: USER_ROLE; name: string };
                 profileId?: ObjectId;
                 profile?: IProfile;
             };

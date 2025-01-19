@@ -156,7 +156,7 @@ export default class AccessControlService {
         action: string
     ): Promise<boolean> {
         try {
-            const from = await ProfileService.getById(fromId);
+            const from = await ProfileService.getByIds(fromId);
             if (!from) return false;
 
             return fetch(`${ACCESS_CONTROL_API_URL}/access/authorize`, {
@@ -236,7 +236,7 @@ export default class AccessControlService {
             headers: {
                 "Content-Type": "application/json",
             },
-            method: "POST",
+            method: "GET",
         })
             .then((res) => res.json())
             .then((res: IResponse<IReqRelationship.Upsert[]>) => {
@@ -248,7 +248,7 @@ export default class AccessControlService {
                         res
                     );
 
-                return res.data;
+                return res.data ?? [];
             });
     }
 
@@ -261,7 +261,7 @@ export default class AccessControlService {
             headers: {
                 "Content-Type": "application/json",
             },
-            method: "POST",
+            method: "GET",
         })
             .then((res) => res.json())
             .then((res: IResponse<IRelationship[]>) => {
@@ -273,7 +273,28 @@ export default class AccessControlService {
                         res
                     );
 
-                return res.data;
+                return res.data ?? [];
+            });
+    }
+
+    public static async getRelationshipByFromTo(from: string | ObjectId, to: string | ObjectId) {
+        return fetch(`${ACCESS_CONTROL_API_URL}/relationships/${from}/${to}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "GET",
+        })
+            .then((res) => res.json())
+            .then((res: IResponse<IRelationship[]>) => {
+                if (res.code !== RESPONSE_CODE.SUCCESS)
+                    throw new ServiceResponseError(
+                        "AccessControl",
+                        "unbindRelationship",
+                        "Failed to unbind relationship",
+                        res
+                    );
+
+                return res.data ?? [];
             });
     }
 

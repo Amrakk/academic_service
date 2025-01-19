@@ -1,0 +1,66 @@
+### GENERATE GROUP CODE
+POST http://localhost:3010/api/v1/invitations/code
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: John Doe
+x-profile-id: 677fd68bffe8b0fae62868b3
+Content-Type: application/json
+
+{
+    "groupId": "6788f8f85d865d50882c62ff",
+    "groupType": 1,
+    "newProfileRole": "Teacher",
+    "expireMinutes": 10
+}
+
+### SUBMIT GROUP CODE
+POST http://localhost:3010/api/v1/invitations/code/TXABLJ
+x-user-id: 6766a7b0f98d0442e37d8316
+x-user-role: 0
+x-user-name: John Doe
+
+### REMOVE GROUP CODE
+DELETE http://localhost:3010/api/v1/invitations/code/677fd68bffe8b0fae62868b4
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: John Doe
+x-profile-id: 677fd68bffe8b0fae62868b3
+
+### SEND INVITATION MAILS
+POST http://localhost:3010/api/v1/invitations/mail
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: John Doe
+x-profile-id: 677fd68bffe8b0fae62868b3
+Content-Type: application/json
+
+{
+    "groupId": "677fd68bffe8b0fae62868b4",
+    "groupType": 0,
+    "role": "Teacher",
+    "profileId": "678d2fa81594fae0d89623fa",
+    "emails": ["hoangduy12823@gmail.com"],
+    "expireMinutes": 1440
+}
+
+### ACCEPT MAIL INVITATION
+POST http://localhost:3010/api/v1/invitations/mail/accept/678d2ff82d4d2ec6fd9f1188
+x-user-id: 6766a7b0f98d0442e37d8350
+x-user-role: 0
+x-user-name: John Doe
+x-profile-id: 678d2fa81594fae0d89623fa
+Content-Type: application/json
+
+### REMOVE INVITATION
+DELETE http://localhost:3010/api/v1/invitations/mail
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: John Doe
+x-profile-id: 677fd68bffe8b0fae62868b3
+Content-Type: application/json
+
+{
+    "email": "hoangduy12823@gmail.com",
+    "groupType": 0,
+    "groupId": "677fd68bffe8b0fae62868b4"
+}
