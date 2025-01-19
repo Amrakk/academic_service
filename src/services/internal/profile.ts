@@ -80,6 +80,19 @@ export default class ProfileService {
     }
 
     // Query
+    public static async getByUserGroupIds(
+        userId: string | ObjectId,
+        groupId: string | ObjectId
+    ): Promise<IProfile | null> {
+        const result = await ZodObjectId.safeParseAsync(userId);
+        if (result.error) throw new NotFoundError("User not found");
+
+        const result2 = await ZodObjectId.safeParseAsync(groupId);
+        if (result2.error) throw new NotFoundError("Group not found");
+
+        return ProfileModel.findOne({ userId: result.data, groupId: result2.data });
+    }
+
     public static async getByIds(id: string | ObjectId): Promise<IProfile | null>;
     public static async getByIds(ids: (string | ObjectId)[]): Promise<IProfile[]>;
     public static async getByIds(

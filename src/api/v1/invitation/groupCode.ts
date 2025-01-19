@@ -16,6 +16,7 @@ import {
     DEFAULT_CODE_EXPIRE_TIME,
 } from "../../../constants.js";
 
+import ConflictError from "../../../errors/ConflictError.js";
 import NotFoundError from "../../../errors/NotFoundError.js";
 import ForbiddenError from "../../../errors/ForbiddenError.js";
 import BadRequestError from "../../../errors/BadRequestError.js";
@@ -27,7 +28,7 @@ import type { IReqInvitation } from "../../../interfaces/api/request.js";
 const generateGroupCodeSchema = z.object({
     groupId: ZodObjectId,
     groupType: groupTypeSchema,
-    newProfileRole: z.preprocess((val) => parseInt(`${val}`), z.nativeEnum(PROFILE_ROLE)),
+    newProfileRole: z.nativeEnum(PROFILE_ROLE),
     expireMinutes: z.number().int().positive().default(DEFAULT_CODE_EXPIRE_TIME),
 });
 
@@ -133,37 +134,60 @@ export const submitCode = ApiController.callbackFactory<{ code: string }, {}, IP
 
             await session.withTransaction(async () => {
                 const requestor = req.ctx.user;
-                const insertData = {
-                    _id: new ObjectId(),
-                    displayName: requestor.name,
-                    roles: [newProfileRole],
-                    userId: requestor._id,
-                };
+                const existedProfile = await ProfileService.getByUserGroupIds(requestor._id, schoolId ?? groupId);
 
-                // TODO: if user exists, update relationship
-                if (schoolId) {
-                    const insertedProfiles = await ProfileService.insert(
-                        [insertData],
-                        { groupId: schoolId, groupType: GROUP_TYPE.SCHOOL },
-                        { session }
-                    );
+                if (existedProfile) {
+                    const updatingRoles = [
+                        ...new Set([...AccessControlService.getRolesFromId(existedProfile.roles), newProfileRole]),
+                    ];
 
-                    await Promise.all([
-                        ProfileService.establishRels(insertedProfiles, GROUP_TYPE.CLASS, groupId),
-                        ProfileService.establishRels(insertedProfiles, GROUP_TYPE.SCHOOL, schoolId),
-                    ]);
+                    if (!AccessControlService.isRolesValid(updatingRoles))
+                        throw new ConflictError("Invalid roles invoked by the code");
 
-                    profile = { ...insertedProfiles[0] };
+                    profile = existedProfile.roles.includes(newProfileRole)
+                        ? { ...existedProfile }
+                        : {
+                              ...(await ProfileService.updateById(
+                                  existedProfile._id,
+                                  { roles: updatingRoles },
+                                  { session }
+                              )),
+                          };
+
+                    // Establish relationship with school class
+                    if (schoolId && groupType === GROUP_TYPE.CLASS) {
+                        const existingRelationships = await AccessControlService.getRelationshipByFromTo(
+                            profile._id,
+                            groupId
+                        );
+
+                        if (existingRelationships.length === 0)
+                            await ProfileService.establishRels([profile], GROUP_TYPE.CLASS, groupId);
+                    }
                 } else {
-                    const insertedProfiles = await ProfileService.insert(
-                        [insertData],
-                        { groupId, groupType },
-                        { session }
-                    );
+                    const insertData = {
+                        _id: new ObjectId(),
+                        displayName: requestor.name,
+                        roles: [newProfileRole],
+                        userId: requestor._id,
+                    };
 
-                    await ProfileService.establishRels(insertedProfiles, groupType, groupId);
+                    const groupInfo = {
+                        groupId: schoolId ?? groupId,
+                        groupType: schoolId ? GROUP_TYPE.SCHOOL : groupType,
+                    };
 
+                    const insertedProfiles = await ProfileService.insert([insertData], groupInfo, { session });
                     profile = { ...insertedProfiles[0] };
+
+                    const schoolRelations = schoolId
+                        ? [
+                              ProfileService.establishRels([profile], GROUP_TYPE.CLASS, groupId),
+                              ProfileService.establishRels([profile], GROUP_TYPE.SCHOOL, schoolId),
+                          ]
+                        : [ProfileService.establishRels([profile], groupType, groupId)];
+
+                    await Promise.all(schoolRelations);
                 }
             });
 

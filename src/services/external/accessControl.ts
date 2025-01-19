@@ -277,6 +277,27 @@ export default class AccessControlService {
             });
     }
 
+    public static async getRelationshipByFromTo(from: string | ObjectId, to: string | ObjectId) {
+        return fetch(`${ACCESS_CONTROL_API_URL}/relationships/${from}/${to}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "GET",
+        })
+            .then((res) => res.json())
+            .then((res: IResponse<IRelationship[]>) => {
+                if (res.code !== RESPONSE_CODE.SUCCESS)
+                    throw new ServiceResponseError(
+                        "AccessControl",
+                        "unbindRelationship",
+                        "Failed to unbind relationship",
+                        res
+                    );
+
+                return res.data ?? [];
+            });
+    }
+
     public static async upsertRelationships(data: IReqRelationship.Upsert[]) {
         return fetch(`${ACCESS_CONTROL_API_URL}/relationships`, {
             headers: {
