@@ -1,5 +1,5 @@
 import type { ObjectId } from "mongooat";
-import type { GROUP_TYPE, PROFILE_ROLE } from "../../constants.js";
+import type { GROUP_TYPE, PROFILE_ROLE, ROLL_CALL_STATUS } from "../../constants.js";
 
 export interface IOffsetPagination {
     page?: number;
@@ -91,5 +91,27 @@ export namespace IReqInvitation {
         email: string;
         groupId: string | ObjectId;
         groupType: GROUP_TYPE;
+    }
+}
+
+// Roll-call
+export namespace IReqRollCall {
+    export interface GetSessions {
+        startDate?: Date;
+        endDate?: Date;
+    }
+    export interface CreateSession {
+        date?: Date;
+    }
+
+    export interface InsertEntry {
+        profileId: string | ObjectId;
+        status: ROLL_CALL_STATUS;
+        remarks?: string;
+    }
+
+    export interface UpdateEntry {
+        status: ROLL_CALL_STATUS;
+        remarks?: string;
     }
 }

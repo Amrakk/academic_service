@@ -159,3 +159,11 @@ export enum GROUP_TYPE {
     SCHOOL = 0,
     CLASS = 1,
 }
+
+// ROLL CALL
+export enum ROLL_CALL_STATUS {
+    PRESENT = "present",
+    ABSENT = "absent",
+    LATE = "late",
+    EXCUSED = "excused",
+}
