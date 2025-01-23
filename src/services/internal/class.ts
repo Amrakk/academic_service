@@ -68,6 +68,13 @@ export default class ClassService {
         return ClassModel.find({}, { projection: { _name: 0 } });
     }
 
+    public static async getBySchoolId(schoolId: string | ObjectId): Promise<IClass[]> {
+        const result = await ZodObjectId.safeParseAsync(schoolId);
+        if (result.error) throw new NotFoundError("School not found");
+
+        return ClassModel.find({ schoolId: result.data }, { projection: { _name: 0 } });
+    }
+
     public static async getById(id: string | ObjectId, options?: { session?: ClientSession }): Promise<IClass | null> {
         const result = await ZodObjectId.safeParseAsync(id);
         if (result.error) throw new NotFoundError("Class not found");

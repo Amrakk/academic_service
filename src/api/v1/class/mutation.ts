@@ -209,7 +209,7 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ICla
             });
 
             if (!deletedClass)
-                throw new ServiceResponseError("Academic Service", "Class: deleteById", "Failed to delete class", {
+                throw new ServiceResponseError("AcademicService", "Class: deleteById", "Failed to delete class", {
                     id,
                 });
 

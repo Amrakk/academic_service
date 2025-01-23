@@ -40,7 +40,7 @@ export const sendInvitationMails = ApiController.callbackFactory<{}, { body: IRe
             const { groupId, groupType, role } = req.body;
 
             if (!requestor)
-                throw new ServiceResponseError("InvitationService", "generateGroupCode", "Requestor not found");
+                throw new ServiceResponseError("AcademicService", "generateGroupCode", "Requestor not found");
 
             if (
                 !AccessControlService.isAllowedToAssignRoles(AccessControlService.getRolesFromId(requestor.roles), [
@@ -245,7 +245,7 @@ export const acceptInvitation = ApiController.callbackFactory<{ id: string }, {}
 
             if (!profile)
                 throw new ServiceResponseError(
-                    "InvitationService",
+                    "AcademicService",
                     "getInvitationData",
                     "Something wrong with profile creation",
                     { id: req.params.id }

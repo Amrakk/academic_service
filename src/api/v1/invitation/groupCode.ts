@@ -51,7 +51,7 @@ export const generateGroupCode = ApiController.callbackFactory<
 
             const requestor = req.ctx.profile;
             if (!requestor)
-                throw new ServiceResponseError("InvitationService", "generateGroupCode", "Requestor not found");
+                throw new ServiceResponseError("AcademicService", "generateGroupCode", "Requestor not found");
 
             if (
                 !AccessControlService.isAllowedToAssignRoles(AccessControlService.getRolesFromId(requestor.roles), [
@@ -193,7 +193,7 @@ export const submitCode = ApiController.callbackFactory<{ code: string }, {}, IP
 
             if (!profile)
                 throw new ServiceResponseError(
-                    "InvitationService",
+                    "AcademicService",
                     "getInvitationData",
                     "Something wrong with profile creation",
                     { code }
