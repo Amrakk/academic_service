@@ -8,6 +8,8 @@ classRouter.post("/rels/:classId", api.class.bindRelationships);
 classRouter.delete("/rels/:classId", api.class.unbindRelationships);
 
 classRouter.get("/:id", api.class.getById);
+classRouter.get("/school/:schoolId", api.class.getBySchoolId);
+
 classRouter.post("/:schoolId?", api.class.insert);
 classRouter.patch("/:id", api.class.updateById);
 classRouter.patch("/:id/avatar", imageUploader, api.class.updateAvatar);

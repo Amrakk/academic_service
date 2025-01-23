@@ -4,9 +4,33 @@ import { PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../
 
 import NotFoundError from "../../../errors/NotFoundError.js";
 
-import type { ISchool } from "../../../interfaces/database/school.js";
+import type { IClass } from "../../../interfaces/database/class.js";
 
-export const getById = ApiController.callbackFactory<{ id: string }, {}, ISchool>({
+export const getBySchoolId = ApiController.callbackFactory<{ schoolId: string }, {}, IClass[]>({
+    action: "view-classes",
+    roleRelationshipPairs: [
+        { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
+        { role: PROFILE_ROLE.STUDENT, relationships: [RELATIONSHIP.ENROLLED_IN] },
+        { role: PROFILE_ROLE.PARENT, relationships: [RELATIONSHIP.HAS_CHILD_IN] },
+    ],
+    toId: (req) => req.params.schoolId,
+    callback: async (req, res, next) => {
+        try {
+            const { schoolId } = req.params;
+
+            const classes = await ClassService.getBySchoolId(schoolId);
+            return res.status(200).json({
+                code: RESPONSE_CODE.SUCCESS,
+                message: RESPONSE_MESSAGE.SUCCESS,
+                data: classes,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+});
+
+export const getById = ApiController.callbackFactory<{ id: string }, {}, IClass>({
     action: "view-class",
     roleRelationshipPairs: [
         { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },

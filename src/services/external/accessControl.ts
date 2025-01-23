@@ -32,7 +32,7 @@ export default class AccessControlService {
                 if (`${details._id}` === `${id}`) return role as PROFILE_ROLE;
             }
 
-            throw new ServiceResponseError("AccessControl", "getRoleFromId", "Role not found", {
+            throw new ServiceResponseError("AccessControlService", "getRoleFromId", "Role not found", {
                 id,
                 roles: AccessControlService.roles,
             });
@@ -97,7 +97,9 @@ export default class AccessControlService {
                 "AccessControlService",
                 "serviceRegistry",
                 "Roles and policies not collected",
-                { registerRoles: AccessControlService.registerRoles }
+                {
+                    registerRoles: AccessControlService.registerRoles,
+                }
             );
 
         AccessControlService.registerRoles.Teacher.child = [AccessControlService.registerRoles.Executive];
@@ -173,10 +175,10 @@ export default class AccessControlService {
             })
                 .then((res) => res.json())
                 .then((res: IResponse) => {
-                    if (res.code === RESPONSE_CODE.FORBIDDEN) return false;
+                    if (res.code === RESPONSE_CODE.FORBIDDEN || res.code === RESPONSE_CODE.NOT_FOUND) return false;
                     if (res.code === RESPONSE_CODE.SUCCESS) return true;
 
-                    throw new ServiceResponseError("AccessControl", "authorize", "Unknown response", res);
+                    throw new ServiceResponseError("AccessControlService", "authorize", "Unknown response", res);
                 });
         } catch (err) {
             return false;
@@ -199,7 +201,7 @@ export default class AccessControlService {
             .then((res: IResponse) => {
                 if (res.code !== RESPONSE_CODE.SUCCESS)
                     throw new ServiceResponseError(
-                        "AccessControl",
+                        "AccessControlService",
                         "bindRelationship",
                         "Failed to bind relationship",
                         res
@@ -219,7 +221,7 @@ export default class AccessControlService {
             .then((res: IResponse) => {
                 if (res.code !== RESPONSE_CODE.SUCCESS)
                     throw new ServiceResponseError(
-                        "AccessControl",
+                        "AccessControlService",
                         "unbindRelationship",
                         "Failed to unbind relationship",
                         res
@@ -242,7 +244,7 @@ export default class AccessControlService {
             .then((res: IResponse<IReqRelationship.Upsert[]>) => {
                 if (res.code !== RESPONSE_CODE.SUCCESS)
                     throw new ServiceResponseError(
-                        "AccessControl",
+                        "AccessControlService",
                         "getRelationshipsByTo",
                         "Failed to get relationships",
                         res
@@ -267,7 +269,7 @@ export default class AccessControlService {
             .then((res: IResponse<IRelationship[]>) => {
                 if (res.code !== RESPONSE_CODE.SUCCESS)
                     throw new ServiceResponseError(
-                        "AccessControl",
+                        "AccessControlService",
                         "getRelationshipsByFrom",
                         "Failed to get relationships",
                         res
@@ -288,7 +290,7 @@ export default class AccessControlService {
             .then((res: IResponse<IRelationship[]>) => {
                 if (res.code !== RESPONSE_CODE.SUCCESS)
                     throw new ServiceResponseError(
-                        "AccessControl",
+                        "AccessControlService",
                         "unbindRelationship",
                         "Failed to unbind relationship",
                         res
@@ -310,7 +312,7 @@ export default class AccessControlService {
             .then((res: IResponse) => {
                 if (res.code !== RESPONSE_CODE.SUCCESS)
                     throw new ServiceResponseError(
-                        "AccessControl",
+                        "AccessControlService",
                         "establishRelationship",
                         "Failed to establish relationship",
                         res
@@ -330,7 +332,7 @@ export default class AccessControlService {
             .then((res: IResponse) => {
                 if (res.code !== RESPONSE_CODE.SUCCESS)
                     throw new ServiceResponseError(
-                        "AccessControl",
+                        "AccessControlService",
                         "updateRelationship",
                         "Failed to update relationship",
                         res
@@ -350,7 +352,7 @@ export default class AccessControlService {
             .then((res: IResponse) => {
                 if (res.code !== RESPONSE_CODE.SUCCESS)
                     throw new ServiceResponseError(
-                        "AccessControl",
+                        "AccessControlService",
                         "deleteRelationshipByIds",
                         "Failed to delete relationships",
                         res

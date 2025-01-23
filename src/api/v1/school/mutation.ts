@@ -52,7 +52,7 @@ export const insert = ApiController.callbackFactory<{}, { body: IReqSchool.Inser
             });
 
             if (!insertedSchool)
-                throw new ServiceResponseError("Academic Service", "School: insert", "Failed to insert school", {
+                throw new ServiceResponseError("AcademicService", "School: insert", "Failed to insert school", {
                     body,
                 });
 
@@ -140,7 +140,7 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ISch
             });
 
             if (!deletedSchool)
-                throw new ServiceResponseError("Academic Service", "School: deleteById", "Failed to delete school", {
+                throw new ServiceResponseError("AcademicService", "School: deleteById", "Failed to delete school", {
                     id,
                 });
 

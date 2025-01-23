@@ -62,7 +62,7 @@ export const getByGroup = ApiController.callbackFactory<
         try {
             const requestor = req.ctx.profile;
             if (!requestor)
-                throw new ServiceResponseError("Academic Service", "Profile: getByGroup", "Profile not found", {
+                throw new ServiceResponseError("AcademicService", "Profile: getByGroup", "Profile not found", {
                     requestor,
                 });
 

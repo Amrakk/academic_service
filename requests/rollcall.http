@@ -1,0 +1,72 @@
+### GET ROLL-CALL SESSIONS
+GET http://localhost:3010/api/v1/rollcall/class/6788f681af3d810f99f54b55
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 677fd68bffe8b0fae62868b3
+
+### GET ROLL-CALL SESSIONS BY DATE RANGE
+GET http://localhost:3010/api/v1/rollcall/class/6788f681af3d810f99f54b55?startDate=2025-01-20&endDate=2025-01-23
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 677fd68bffe8b0fae62868b3
+
+### GET ROLL-CALL ENTRIES BY SESSION ID
+GET http://localhost:3010/api/v1/rollcall/679255f200277490707c60a0
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 677fd68bffe8b0fae62868b3
+
+### CREATE ROLL-CALL SESSION
+POST http://localhost:3010/api/v1/rollcall/class/6788f681af3d810f99f54b55
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 677fd68bffe8b0fae62868b3
+Content-Length: application/json
+
+{
+    "date": "2025-01-23",
+}
+
+### REMOVE ROLL-CALL SESSION
+DELETE http://localhost:3010/api/v1/rollcall/679255f200277490707c60a0
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 677fd68bffe8b0fae62868b3
+
+### CREATE ROLL-CALL ENTRY
+POST http://localhost:3010/api/v1/rollcall/679255f200277490707c60a0
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 677fd68bffe8b0fae62868b3
+Content-Type: application/json
+
+{
+    "profileId": "678d2fa81594fae0d89623fa",
+    "status": "present"
+}
+
+### UPDATE ROLL-CALL ENTRY
+PATCH http://localhost:3010/api/v1/rollcall/entry/679257b5a484a1113f7308bb
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 677fd68bffe8b0fae62868b3
+Content-Type: application/json
+
+{
+    "status": "late",
+    "remarks": "Late by 5 minutes"
+}
+
+### REMOVE ROLL-CALL ENTRY
+DELETE http://localhost:3010/api/v1/rollcall/entry/679257b5a484a1113f7308bb
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 677fd68bffe8b0fae62868b3

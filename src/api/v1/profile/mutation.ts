@@ -39,7 +39,7 @@ export const insert = ApiController.callbackFactory<
         try {
             const creator = req.ctx.profile;
             if (!creator)
-                throw new ServiceResponseError("Academic Service", "Profile: insert", "Creator is undefined", {
+                throw new ServiceResponseError("AcademicService", "Profile: insert", "Creator is undefined", {
                     creator,
                 });
 
@@ -115,7 +115,7 @@ export const updateById = ApiController.callbackFactory<{ id: string }, { body: 
             const requestor = req.ctx.profile;
 
             if (!requestor)
-                throw new ServiceResponseError("Academic Service", "Profile: updateById", "Requestor is undefined", {
+                throw new ServiceResponseError("AcademicService", "Profile: updateById", "Requestor is undefined", {
                     requestor,
                 });
 
@@ -172,7 +172,7 @@ export const updateById = ApiController.callbackFactory<{ id: string }, { body: 
             });
 
             if (!profile)
-                throw new ServiceResponseError("Academic Service", "Profile: updateById", "Profile is undefined", {
+                throw new ServiceResponseError("AcademicService", "Profile: updateById", "Profile is undefined", {
                     id,
                     profile,
                     requestor,
@@ -242,7 +242,7 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, IPro
             const { id } = req.params;
             const requestor = req.ctx.profile;
             if (!requestor)
-                throw new ServiceResponseError("Academic Service", "Profile: deleteById", "Requestor is undefined", {
+                throw new ServiceResponseError("AcademicService", "Profile: deleteById", "Requestor is undefined", {
                     requestor,
                 });
 
@@ -274,7 +274,7 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, IPro
             });
 
             if (!profile)
-                throw new ServiceResponseError("Academic Service", "Profile: deleteById", "Profile is undefined", {
+                throw new ServiceResponseError("AcademicService", "Profile: deleteById", "Profile is undefined", {
                     id,
                     profile,
                     requestor,
