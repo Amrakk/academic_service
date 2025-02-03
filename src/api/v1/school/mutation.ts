@@ -134,6 +134,9 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ISch
                     ProfileService.deleteByGroupId(id, { session }),
                     ClassService.deleteBySchoolId(id, { session }),
                 ]);
+
+                // TODO: remove class contents(invitation, party, rollcall, etc.)
+
                 if (profileIds.length > 0) await AccessControlService.deleteRelationshipByProfileIds(profileIds);
 
                 deletedSchool = { ...school };
@@ -149,6 +152,8 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ISch
                 .json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS, data: deletedSchool });
         } catch (err) {
             next(err);
+        } finally {
+            session.endSession();
         }
     },
 });

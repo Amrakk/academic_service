@@ -1,5 +1,11 @@
 import ServiceResponseError from "../../errors/ServiceResponseError.js";
-import { ACCESS_POINT_API_URL, APP_REGISTRY_KEY, BASE_PATH, ORIGIN } from "../../constants.js";
+import { ACCESS_POINT_API_URL, APP_REGISTRY_KEY, BASE_PATH, ORIGIN, RESPONSE_CODE } from "../../constants.js";
+
+import NotFoundError from "../../errors/NotFoundError.js";
+
+import type { ObjectId } from "mongooat";
+import type { IResponse } from "../../interfaces/api/response.js";
+import type { IUser } from "../../interfaces/services/external/accessControl.js";
 
 export default class AccessPointService {
     public static async serviceRegistry(): Promise<void> {
@@ -29,7 +35,7 @@ export default class AccessPointService {
 
                 const jsonResponse = await res.json();
 
-                if (jsonResponse.code !== 0) {
+                if (jsonResponse.code !== RESPONSE_CODE.SUCCESS) {
                     throw new ServiceResponseError(
                         "AccessPointService",
                         "serviceRegistry",
@@ -49,5 +55,21 @@ export default class AccessPointService {
         };
 
         await retry(3);
+    }
+
+    public static async getUserById(userId: string | ObjectId): Promise<IUser> {
+        return fetch(`${ACCESS_POINT_API_URL}/users/${userId}`, {
+            headers: {
+                "x-app-registry-key": APP_REGISTRY_KEY,
+            },
+        })
+            .then((res) => res.json())
+            .then((data: IResponse<IUser>) => {
+                if (data.code === RESPONSE_CODE.NOT_FOUND) throw new NotFoundError("User not found");
+                else if (data.code !== RESPONSE_CODE.SUCCESS)
+                    throw new ServiceResponseError("AccessPointService", "getUserById", "Failed to get user", data);
+
+                return data.data!;
+            });
     }
 }

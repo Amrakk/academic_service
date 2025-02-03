@@ -115,3 +115,21 @@ export namespace IReqRollCall {
         remarks?: string;
     }
 }
+
+// Party
+export namespace IReqParty {
+    export interface Insert {
+        name: string;
+        description?: string;
+        memberIds: (string | ObjectId)[];
+    }
+
+    export interface Update {
+        name?: string;
+        description?: string;
+    }
+
+    export interface UpsertRemove {
+        memberIds: (string | ObjectId)[];
+    }
+}

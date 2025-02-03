@@ -2,6 +2,7 @@ import ClassService from "./class.js";
 import SchoolService from "./school.js";
 import ImgbbService from "../external/imgbb.js";
 import { ZodObjectId, ObjectId, z } from "mongooat";
+import { isIdsExist } from "../../utils/isIdExist.js";
 import { ProfileModel } from "../../database/models/profile.js";
 import AccessControlService from "../external/accessControl.js";
 import { removeUndefinedKeys } from "../../utils/removeUndefinedKeys.js";
@@ -15,6 +16,15 @@ import type { IReqProfile } from "../../interfaces/api/request.js";
 import type { IProfile } from "../../interfaces/database/profile.js";
 
 export default class ProfileService {
+    public static async isProfileExists(id: ObjectId, options?: { session?: ClientSession }): Promise<boolean>;
+    public static async isProfileExists(ids: ObjectId[], options?: { session?: ClientSession }): Promise<boolean>;
+    public static async isProfileExists(
+        ids: ObjectId | ObjectId[],
+        options?: { session?: ClientSession }
+    ): Promise<boolean> {
+        return isIdsExist(ProfileModel, Array.isArray(ids) ? ids : [ids], options);
+    }
+
     public static async establishRels(profiles: IProfile[], groupType: GROUP_TYPE, groupId: ObjectId): Promise<void> {
         const profileRoles = profiles.map(({ _id, roles }) => ({
             _id: _id,
