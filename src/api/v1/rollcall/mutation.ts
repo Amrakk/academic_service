@@ -1,6 +1,6 @@
 import ApiController from "../../apiController.js";
 import RollCallService from "../../../services/internal/rollCall.js";
-import { PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE, ROLL_CALL_STATUS } from "../../../constants.js";
+import { PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
 
 import NotFoundError from "../../../errors/NotFoundError.js";
 import ServiceResponseError from "../../../errors/ServiceResponseError.js";

@@ -1,5 +1,5 @@
 import type { ObjectId } from "mongooat";
-import type { RELATIONSHIP } from "../../../constants.js";
+import type { RELATIONSHIP, SOCIAL_MEDIA_PROVIDER, USER_ROLE, USER_STATUS } from "../../../constants.js";
 
 export interface IRelationGroups<T = ObjectId> {
     mandatory: T[];
@@ -93,4 +93,22 @@ export namespace IReqRelationship {
     export interface DeleteByIds {
         ids: (string | ObjectId)[];
     }
+}
+
+export interface IUser {
+    _id: ObjectId;
+    name: string;
+    email: string;
+    phoneNumber?: string;
+    avatarUrl: string;
+    role: USER_ROLE;
+    status: USER_STATUS;
+    socialMediaAccounts: ISocialMediaAccount[];
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface ISocialMediaAccount {
+    provider: SOCIAL_MEDIA_PROVIDER;
+    accountId: string;
 }

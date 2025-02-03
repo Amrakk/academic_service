@@ -133,7 +133,6 @@ export const removeInvitation = ApiController.callbackFactory<
     },
 });
 
-// TODO: Test this
 export const acceptInvitation = ApiController.callbackFactory<{ id: string }, {}, IProfile>({
     action: "accept-invitation",
     roleRelationshipPairs: [],

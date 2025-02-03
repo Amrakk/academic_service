@@ -191,6 +191,8 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ICla
             await session.withTransaction(async () => {
                 const _class = await ClassService.deleteById(id, profileId!, { session });
 
+                // TODO: remove class contents(invitation, party, rollcall, etc.)
+
                 if (!_class.schoolId) {
                     // Case 1: Personal class
                     const profileIds = await ProfileService.deleteByGroupId(id);

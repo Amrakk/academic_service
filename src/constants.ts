@@ -80,11 +80,22 @@ export enum RESPONSE_MESSAGE {
     INTERNAL_SERVER_ERROR = "An unexpected error occurred! Please try again later.",
 }
 
+// USER
 export enum USER_ROLE {
     ADMIN = 0,
     USER = 1,
 }
 
+export enum SOCIAL_MEDIA_PROVIDER {
+    GOOGLE = "google",
+}
+
+export enum USER_STATUS {
+    ACTIVE = 0,
+    INACTIVE = 1,
+}
+
+// PROFILE
 export enum PROFILE_ROLE {
     EXECUTIVE = "Executive",
     TEACHER = "Teacher",

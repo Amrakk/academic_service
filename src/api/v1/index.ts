@@ -1,4 +1,5 @@
 export * as class from "./class/index.js";
+export * as party from "./party/index.js";
 export * as school from "./school/index.js";
 export * as profile from "./profile/index.js";
 export * as rollcall from "./rollcall/index.js";

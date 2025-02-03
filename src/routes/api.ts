@@ -6,11 +6,11 @@ import rollcallRouter from "./rollcallRouter.js";
 import invitationRouter from "./invitationRouter.js";
 import RouteCollector from "../middlewares/routeCollector.js";
 import { BASE_PATH, RESPONSE_CODE, RESPONSE_MESSAGE } from "../constants.js";
+import partyRouter from "./partyRouter.js";
 
 const router = express.Router();
 
 router.get("/", (req, res) => {
-    console.log(JSON.stringify(req.ctx, undefined, 2));
     res.send("API is working");
 });
 
@@ -23,6 +23,7 @@ router.get("/routes", (req, res) => {
 });
 
 router.use("/classes", classRouter);
+router.use("/parties", partyRouter);
 router.use("/schools", schoolRouter);
 router.use("/profiles", profileRouter);
 router.use("/rollcall", rollcallRouter);
