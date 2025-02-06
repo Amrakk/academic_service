@@ -1,5 +1,6 @@
 import type { ObjectId } from "mongooat";
 import type { GROUP_TYPE, PROFILE_ROLE, ROLL_CALL_STATUS } from "../../constants.js";
+import type { IGradeType } from "../database/subject.js";
 
 export interface IOffsetPagination {
     page?: number;
@@ -131,5 +132,21 @@ export namespace IReqParty {
 
     export interface UpsertRemove {
         memberIds: (string | ObjectId)[];
+    }
+}
+
+// Subject
+export namespace IReqSubject {
+    export interface Insert {
+        name: string;
+        gradeTypes: string[];
+        avatarUrl?: string;
+        description?: string;
+    }
+
+    export interface Update {
+        name?: string;
+        avatarUrl?: string;
+        description?: string;
     }
 }

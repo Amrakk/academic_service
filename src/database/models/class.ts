@@ -23,4 +23,3 @@ export const ClassModel = mongooat.Model("Class", classSchema);
 await ClassModel.dropIndexes();
 await ClassModel.createIndex({ schoolId: 1 });
 await ClassModel.createIndex({ creatorId: 1 });
-await ClassModel.createIndex({ _name: 1, schoolId: 1 }, { unique: true });

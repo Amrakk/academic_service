@@ -1,14 +1,14 @@
 import ApiController from "../../apiController.js";
-import PartyService from "../../../services/internal/party.js";
+import SubjectService from "../../../services/internal/subject.js";
 import { PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
 
 import NotFoundError from "../../../errors/NotFoundError.js";
 import ConflictError from "../../../errors/ConflictError.js";
 
-import type { IParty } from "../../../interfaces/database/party.js";
+import type { ISubject } from "../../../interfaces/database/subject.js";
 
-export const getByClassId = ApiController.callbackFactory<{ classId: string }, {}, IParty[]>({
-    action: "view-parties",
+export const getByClassId = ApiController.callbackFactory<{ classId: string }, {}, ISubject[]>({
+    action: "view-subjects",
     roleRelationshipPairs: [
         { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
         { role: PROFILE_ROLE.STUDENT, relationships: [RELATIONSHIP.ENROLLED_IN] },
@@ -19,7 +19,7 @@ export const getByClassId = ApiController.callbackFactory<{ classId: string }, {
         try {
             const { classId } = req.params;
 
-            const parties = await PartyService.getByClassId(classId);
+            const parties = await SubjectService.getByClassId(classId);
             return res.status(200).json({
                 code: RESPONSE_CODE.SUCCESS,
                 message: RESPONSE_MESSAGE.SUCCESS,
@@ -31,8 +31,8 @@ export const getByClassId = ApiController.callbackFactory<{ classId: string }, {
     },
 });
 
-export const getById = ApiController.callbackFactory<{ classId: string; id: string }, {}, IParty>({
-    action: "view-party",
+export const getById = ApiController.callbackFactory<{ classId: string; id: string }, {}, ISubject>({
+    action: "view-subject",
     roleRelationshipPairs: [
         { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
         { role: PROFILE_ROLE.STUDENT, relationships: [RELATIONSHIP.ENROLLED_IN] },
@@ -44,14 +44,15 @@ export const getById = ApiController.callbackFactory<{ classId: string; id: stri
             const { id } = req.params;
             const { classId } = req.params;
 
-            const party = await PartyService.getById(id);
-            if (!party) throw new NotFoundError("Party not found");
-            if (`${party.classId}` !== classId) throw new ConflictError("Party's classId does not match the request");
+            const subject = await SubjectService.getById(id);
+            if (!subject) throw new NotFoundError("Subject not found");
+            if (`${subject.classId}` !== classId)
+                throw new ConflictError("Subject's classId does not match the request");
 
             return res.status(200).json({
                 code: RESPONSE_CODE.SUCCESS,
                 message: RESPONSE_MESSAGE.SUCCESS,
-                data: party,
+                data: subject,
             });
         } catch (err) {
             next(err);
