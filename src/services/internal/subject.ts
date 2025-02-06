@@ -4,7 +4,7 @@ import { SubjectModel } from "../../database/models/subject.js";
 import NotFoundError from "../../errors/NotFoundError.js";
 import BadRequestError from "../../errors/BadRequestError.js";
 
-import type { ClientSession, FilterOperators } from "mongodb";
+import type { ClientSession } from "mongodb";
 import type { IReqSubject } from "../../interfaces/api/request.js";
 import type { ISubject } from "../../interfaces/database/subject.js";
 

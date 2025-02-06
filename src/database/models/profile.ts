@@ -27,4 +27,3 @@ export const ProfileModel = mongooat.Model("Profile", profileSchema);
 await ProfileModel.dropIndexes();
 await ProfileModel.createIndex({ userId: 1 });
 await ProfileModel.createIndex({ groupId: 1 });
-await ProfileModel.createIndex({ userId: 1, groupId: 1 }, { unique: true });
