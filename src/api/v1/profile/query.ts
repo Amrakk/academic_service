@@ -87,7 +87,6 @@ export const getByGroup = ApiController.callbackFactory<
     },
 });
 
-// TODO: Implement 'extends' query
 export const getById = ApiController.callbackFactory<{ id: string }, {}, IProfile>({
     action: "view-profile",
     roleRelationshipPairs: [
