@@ -150,3 +150,18 @@ export namespace IReqSubject {
         description?: string;
     }
 }
+
+// Grade
+export namespace IReqGrade {
+    export interface Insert {
+        studentId: string | ObjectId;
+        gradeTypeId: string | ObjectId;
+        value: number;
+        comment?: string;
+    }
+
+    export interface Update {
+        value?: number;
+        comment?: string;
+    }
+}

@@ -1,6 +1,7 @@
 import express from "express";
 import partyRouter from "./partyRouter.js";
 import classRouter from "./classRouter.js";
+import gradeRouter from "./gradeRouter.js";
 import schoolRouter from "./schoolRouter.js";
 import subjectRouter from "./subjectRouter.js";
 import profileRouter from "./profileRouter.js";
@@ -23,6 +24,7 @@ router.get("/routes", (req, res) => {
     });
 });
 
+router.use("/grades", gradeRouter);
 router.use("/classes", classRouter);
 router.use("/parties", partyRouter);
 router.use("/schools", schoolRouter);
