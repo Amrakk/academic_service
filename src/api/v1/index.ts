@@ -1,4 +1,5 @@
 export * as class from "./class/index.js";
+export * as grade from "./grade/index.js";
 export * as party from "./party/index.js";
 export * as school from "./school/index.js";
 export * as subject from "./subject/index.js";

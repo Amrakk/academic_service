@@ -179,3 +179,10 @@ export enum ROLL_CALL_STATUS {
     LATE = "late",
     EXCUSED = "excused",
 }
+
+// GRADE
+export enum GET_GRADE_ID_TYPE {
+    STUDENT = "studentId",
+    SUBJECT = "subjectId",
+    GRADE_TYPE = "gradeTypeId",
+}
