@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { PROFILE_ROLE } from "../constants.js";
-import AccessControlService from "../services/external/accessControl.js";
 
 export const timebasedPaginationSchema = z
     .object({
