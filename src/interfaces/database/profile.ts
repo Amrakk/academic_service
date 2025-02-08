@@ -8,7 +8,7 @@ export interface IProfile {
     userId?: ObjectId;
     groupId: ObjectId;
     groupType: GROUP_TYPE;
-    roles: (string | ObjectId)[];
+    roles: ObjectId[];
     updatedAt: Date;
     createdAt: Date;
 }

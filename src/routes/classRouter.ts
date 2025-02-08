@@ -12,7 +12,7 @@ classRouter.get("/school/:schoolId", api.class.getBySchoolId);
 
 classRouter.post("/:schoolId?", api.class.insert);
 classRouter.patch("/:id", api.class.updateById);
-classRouter.patch("/:id/avatar", imageUploader, api.class.updateAvatar);
+classRouter.patch("/:id/avatar", imageUploader(), api.class.updateAvatar);
 
 classRouter.delete("/:id", api.class.deleteById);
 

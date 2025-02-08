@@ -8,7 +8,7 @@ profileRouter.get("/:groupType/:groupId", api.profile.getByGroup);
 profileRouter.get("/me", api.profile.getByUserId);
 profileRouter.get("/:id", api.profile.getById);
 
-profileRouter.patch("/:id/avatar", imageUploader, api.profile.updateAvatar);
+profileRouter.patch("/:id/avatar", imageUploader(), api.profile.updateAvatar);
 profileRouter.post("/:groupType/:groupId", api.profile.insert);
 profileRouter.patch("/:id", api.profile.updateById);
 

@@ -161,7 +161,7 @@ export const acceptInvitation = ApiController.callbackFactory<{ id: string }, {}
                     if (!AccessControlService.isRolesValid(updatingRoles))
                         throw new ConflictError("Invalid roles invoked by the invitation");
 
-                    profile = existedProfile.roles.includes(role)
+                    profile = AccessControlService.getRolesFromId(existedProfile.roles).includes(role)
                         ? { ...existedProfile }
                         : {
                               ...(await ProfileService.updateById(
