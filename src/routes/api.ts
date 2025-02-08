@@ -1,4 +1,5 @@
 import express from "express";
+import newsRouter from "./newsRouter.js";
 import partyRouter from "./partyRouter.js";
 import classRouter from "./classRouter.js";
 import gradeRouter from "./gradeRouter.js";
@@ -24,6 +25,7 @@ router.get("/routes", (req, res) => {
     });
 });
 
+router.use("/news", newsRouter);
 router.use("/grades", gradeRouter);
 router.use("/classes", classRouter);
 router.use("/parties", partyRouter);

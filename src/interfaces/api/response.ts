@@ -1,3 +1,4 @@
+import type { ObjectId } from "mongooat";
 import type BaseError from "../../errors/BaseError.js";
 import type { IProfile } from "../database/profile.js";
 import type { RESPONSE_CODE, RESPONSE_MESSAGE } from "../../constants.js";
@@ -19,4 +20,32 @@ export namespace IResGetAll {
         profiles: IProfile[];
         totalDocuments: number;
     }
+}
+
+export interface IResNews {
+    _id: ObjectId;
+    content: string;
+    imageUrl?: string;
+    targetRoles: ObjectId[];
+    creator: {
+        _id: ObjectId;
+        displayName: string;
+        avatarUrl: string;
+    };
+    groupId: ObjectId;
+    updatedAt: Date;
+    createdAt: Date;
+}
+
+export interface IResComment {
+    _id: ObjectId;
+    newsId: ObjectId;
+    content: string;
+    creator: {
+        _id: ObjectId;
+        displayName: string;
+        avatarUrl: string;
+    };
+    updatedAt: Date;
+    createdAt: Date;
 }

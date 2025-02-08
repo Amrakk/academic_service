@@ -55,7 +55,21 @@ export default class AccessControlService {
         }, roles[0]);
     }
 
-    public static async isAllowedToAssignRoles(fromRoles: PROFILE_ROLE[], toRoles: PROFILE_ROLE[]): Promise<boolean> {
+    public static getLowerRoles(role: PROFILE_ROLE): IRoleSimplified[] {
+        const rolePriority: Record<PROFILE_ROLE, number> = {
+            [PROFILE_ROLE.EXECUTIVE]: 3,
+            [PROFILE_ROLE.TEACHER]: 2,
+            [PROFILE_ROLE.STUDENT]: 1,
+            [PROFILE_ROLE.PARENT]: 0,
+        };
+
+        const priority = rolePriority[role];
+        return Object.values(AccessControlService.roles).filter(
+            (role) => rolePriority[role.name as PROFILE_ROLE] < priority
+        );
+    }
+
+    public static isAllowedToAssignRoles(fromRoles: PROFILE_ROLE[], toRoles: PROFILE_ROLE[]): boolean {
         const fromRole = this.getHighestPriorityRole(fromRoles);
 
         switch (fromRole) {
@@ -70,7 +84,26 @@ export default class AccessControlService {
         }
     }
 
-    public static async isRolesValid(roles: PROFILE_ROLE[]): Promise<boolean> {
+    public static isAllowedToViewNews(requestorRoles: PROFILE_ROLE[], targetRoles: PROFILE_ROLE[]): boolean {
+        if (targetRoles.length === 0) return true;
+
+        const requestorRole = this.getHighestPriorityRole(requestorRoles);
+        switch (requestorRole) {
+            case PROFILE_ROLE.EXECUTIVE:
+                return true;
+            case PROFILE_ROLE.TEACHER:
+                return !targetRoles.includes(PROFILE_ROLE.EXECUTIVE);
+            case PROFILE_ROLE.STUDENT:
+                return targetRoles.length === 1 && targetRoles.includes(PROFILE_ROLE.STUDENT);
+            case PROFILE_ROLE.PARENT:
+                const targetRole = this.getHighestPriorityRole(targetRoles);
+                return [PROFILE_ROLE.STUDENT, PROFILE_ROLE.PARENT].includes(targetRole);
+            default:
+                return false;
+        }
+    }
+
+    public static isRolesValid(roles: PROFILE_ROLE[]): boolean {
         const hasStudent = roles.find((role) => role === PROFILE_ROLE.STUDENT);
 
         if (hasStudent) return roles.length === 1;
@@ -233,7 +266,7 @@ export default class AccessControlService {
         const { relationships } = query || {};
         let url = new URL(`${ACCESS_CONTROL_API_URL}/relationships/to/${to}`);
 
-        if (relationships) url.searchParams.append("relationships", relationships.join(","));
+        if (relationships) relationships.forEach((rel) => url.searchParams.append("relationships", rel));
         return fetch(url, {
             headers: {
                 "Content-Type": "application/json",
@@ -241,7 +274,7 @@ export default class AccessControlService {
             method: "GET",
         })
             .then((res) => res.json())
-            .then((res: IResponse<IReqRelationship.Upsert[]>) => {
+            .then((res: IResponse<IRelationship[]>) => {
                 if (res.code !== RESPONSE_CODE.SUCCESS)
                     throw new ServiceResponseError(
                         "AccessControlService",
@@ -250,7 +283,12 @@ export default class AccessControlService {
                         res
                     );
 
-                return res.data ?? [];
+                return (res.data ?? []).map((rel) => ({
+                    _id: new ObjectId(`${rel._id}`),
+                    from: new ObjectId(`${rel.from}`),
+                    to: new ObjectId(`${rel.to}`),
+                    relationship: rel.relationship,
+                }));
             });
     }
 
@@ -258,7 +296,7 @@ export default class AccessControlService {
         const { relationships } = query || {};
         let url = new URL(`${ACCESS_CONTROL_API_URL}/relationships/from/${from}`);
 
-        if (relationships) url.searchParams.append("relationships", relationships.join(","));
+        if (relationships) relationships.forEach((rel) => url.searchParams.append("relationships", rel));
         return fetch(url, {
             headers: {
                 "Content-Type": "application/json",
@@ -275,7 +313,12 @@ export default class AccessControlService {
                         res
                     );
 
-                return res.data ?? [];
+                return (res.data ?? []).map((rel) => ({
+                    _id: new ObjectId(`${rel._id}`),
+                    from: new ObjectId(`${rel.from}`),
+                    to: new ObjectId(`${rel.to}`),
+                    relationship: rel.relationship,
+                }));
             });
     }
 
@@ -296,7 +339,12 @@ export default class AccessControlService {
                         res
                     );
 
-                return res.data ?? [];
+                return (res.data ?? []).map((rel) => ({
+                    _id: new ObjectId(`${rel._id}`),
+                    from: new ObjectId(`${rel.from}`),
+                    to: new ObjectId(`${rel.to}`),
+                    relationship: rel.relationship,
+                }));
             });
     }
 

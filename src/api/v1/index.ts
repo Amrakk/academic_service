@@ -1,3 +1,4 @@
+export * as news from "./news/index.js";
 export * as class from "./class/index.js";
 export * as grade from "./grade/index.js";
 export * as party from "./party/index.js";

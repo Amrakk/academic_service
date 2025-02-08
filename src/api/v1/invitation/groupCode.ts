@@ -144,7 +144,7 @@ export const submitCode = ApiController.callbackFactory<{ code: string }, {}, IP
                     if (!AccessControlService.isRolesValid(updatingRoles))
                         throw new ConflictError("Invalid roles invoked by the code");
 
-                    profile = existedProfile.roles.includes(newProfileRole)
+                    profile = AccessControlService.getRolesFromId(existedProfile.roles).includes(newProfileRole)
                         ? { ...existedProfile }
                         : {
                               ...(await ProfileService.updateById(

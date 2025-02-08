@@ -1,6 +1,5 @@
 import type { ObjectId } from "mongooat";
 import type { GROUP_TYPE, PROFILE_ROLE, ROLL_CALL_STATUS } from "../../constants.js";
-import type { IGradeType } from "../database/subject.js";
 
 export interface IOffsetPagination {
     page?: number;
@@ -163,5 +162,26 @@ export namespace IReqGrade {
     export interface Update {
         value?: number;
         comment?: string;
+    }
+}
+
+// News
+export namespace IReqNews {
+    export interface Query extends ITimeBasedPagination, IReqNews.Filter {}
+
+    export interface Filter {
+        targetRoles?: PROFILE_ROLE[];
+    }
+
+    export interface Insert {
+        content: string;
+        imageUrl?: string;
+        targetRoles?: PROFILE_ROLE[];
+    }
+
+    export interface Update {
+        content?: string;
+        imageUrl?: string;
+        targetRoles?: PROFILE_ROLE[];
     }
 }

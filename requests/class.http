@@ -57,7 +57,7 @@ x-profile-id: 677fd68bffe8b0fae62868b3
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ----WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="avatar"; filename="avatar.jpg"
+Content-Disposition: form-data; name="image"; filename="avatar.png"
 Content-Type: image/jpeg
 
 < ./images/class_avatar.png

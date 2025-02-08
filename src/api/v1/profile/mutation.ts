@@ -5,7 +5,6 @@ import ClassService from "../../../services/internal/class.js";
 import SchoolService from "../../../services/internal/school.js";
 import ProfileService from "../../../services/internal/profile.js";
 import { groupTypeSchema } from "../../../database/models/profile.js";
-import { removeUndefinedKeys } from "../../../utils/removeUndefinedKeys.js";
 import AccessControlService from "../../../services/external/accessControl.js";
 import { GROUP_TYPE, PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
 
@@ -164,19 +163,22 @@ export const updateById = ApiController.callbackFactory<{ id: string }, { body: 
                     }
                 }
 
-                profile = removeUndefinedKeys({
-                    ...oldProfile,
-                    ...body,
-                    userId: body.userId ? new ObjectId(body.userId) : undefined,
-                });
-            });
+                const { roles, userId, ...rest } = body;
 
+                profile = {
+                    ...oldProfile,
+                    ...rest,
+                    ...(roles ? { roles: roles.map((role) => AccessControlService.roles[role]._id) } : {}),
+                    ...(userId ? { userId: new ObjectId(userId) } : {}),
+                };
+            });
             if (!profile)
                 throw new ServiceResponseError("AcademicService", "Profile: updateById", "Profile is undefined", {
                     id,
                     profile,
                     requestor,
                 });
+
             return res
                 .status(200)
                 .json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS, data: profile });
