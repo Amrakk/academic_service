@@ -1,17 +1,16 @@
-import { z, ZodObjectId } from "mongooat";
-import { roleSchema, timebasedPaginationSchema } from "../../utils/schemas.js";
+import { ZodObjectId } from "mongooat";
+import { PROFILE_ROLE } from "../../constants.js";
 import { NewsModel } from "../../database/models/news.js";
 import AccessControlService from "../external/accessControl.js";
+import { roleSchema, timebasedPaginationSchema } from "../../utils/schemas.js";
 
 import NotFoundError from "../../errors/NotFoundError.js";
 import BadRequestError from "../../errors/BadRequestError.js";
 
 import type { ClientSession, ObjectId } from "mongodb";
 import type { INews } from "../../interfaces/database/news.js";
-import type { IReqNews, ITimeBasedPagination } from "../../interfaces/api/request.js";
+import type { IReqNews } from "../../interfaces/api/request.js";
 import type { IResNews } from "../../interfaces/api/response.js";
-import { PROFILE_ROLE } from "../../constants.js";
-import ForbiddenError from "../../errors/ForbiddenError.js";
 
 export default class NewsService {
     // Query
