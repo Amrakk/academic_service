@@ -103,6 +103,17 @@ export default class AccessControlService {
         }
     }
 
+    public static compare(aRole: PROFILE_ROLE, bRole: PROFILE_ROLE): number {
+        const rolePriority: Record<PROFILE_ROLE, number> = {
+            [PROFILE_ROLE.EXECUTIVE]: 3,
+            [PROFILE_ROLE.TEACHER]: 2,
+            [PROFILE_ROLE.STUDENT]: 1,
+            [PROFILE_ROLE.PARENT]: 0,
+        };
+
+        return rolePriority[aRole] - rolePriority[bRole];
+    }
+
     public static isRolesValid(roles: PROFILE_ROLE[]): boolean {
         const hasStudent = roles.find((role) => role === PROFILE_ROLE.STUDENT);
 
