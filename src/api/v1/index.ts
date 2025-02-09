@@ -3,6 +3,7 @@ export * as class from "./class/index.js";
 export * as grade from "./grade/index.js";
 export * as party from "./party/index.js";
 export * as school from "./school/index.js";
+export * as comment from "./comment/index.js";
 export * as subject from "./subject/index.js";
 export * as profile from "./profile/index.js";
 export * as rollcall from "./rollcall/index.js";

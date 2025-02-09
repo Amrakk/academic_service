@@ -185,3 +185,10 @@ export namespace IReqNews {
         targetRoles?: PROFILE_ROLE[];
     }
 }
+
+// Comments
+export namespace IReqComment {
+    export interface Upsert {
+        content: string;
+    }
+}

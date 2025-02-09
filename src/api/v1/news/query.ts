@@ -16,7 +16,6 @@ import NotFoundError from "../../../errors/NotFoundError.js";
 import ForbiddenError from "../../../errors/ForbiddenError.js";
 import BadRequestError from "../../../errors/BadRequestError.js";
 
-import type { Response } from "express";
 import type { IResNews } from "../../../interfaces/api/response.js";
 import type { IReqNews } from "../../../interfaces/api/request.js";
 
@@ -141,8 +140,6 @@ export const getGroupNews = ApiController.callbackFactory<{}, { query: IReqNews.
     },
 });
 
-const pendingResponse = [] as Response[];
-
 export const getLatestNews = ApiController.callbackFactory<{}, { query: IReqNews.Filter }, IResNews[]>({
     action: "view-news",
     roleRelationshipPairs: [],
@@ -165,34 +162,31 @@ export const getLatestNews = ApiController.callbackFactory<{}, { query: IReqNews
             if (targetRoles && !AccessControlService.isAllowedToViewNews(requestorRoles, targetRolesResult.data ?? []))
                 throw new ForbiddenError("News not accessible to the requestor");
 
-            pendingResponse.push(res);
+            const query = { targetRoles, from: new Date(), limit: 15 };
             setTimeout(async () => {
-                if (pendingResponse.includes(res)) {
-                    const relatedGroups = await AccessControlService.getRelationshipsByFrom(requestor._id, {
-                        relationships: [
-                            RELATIONSHIP.CREATOR,
-                            RELATIONSHIP.MANAGES,
-                            RELATIONSHIP.EMPLOYED_AT,
-                            RELATIONSHIP.STUDIES_AT,
-                            RELATIONSHIP.ENROLLED_IN,
-                            RELATIONSHIP.HAS_CHILD_IN,
-                            RELATIONSHIP.ASSOCIATED_WITH,
-                        ],
-                    });
+                const relatedGroups = await AccessControlService.getRelationshipsByFrom(requestor._id, {
+                    relationships: [
+                        RELATIONSHIP.CREATOR,
+                        RELATIONSHIP.MANAGES,
+                        RELATIONSHIP.EMPLOYED_AT,
+                        RELATIONSHIP.STUDIES_AT,
+                        RELATIONSHIP.ENROLLED_IN,
+                        RELATIONSHIP.HAS_CHILD_IN,
+                        RELATIONSHIP.ASSOCIATED_WITH,
+                    ],
+                });
 
-                    const relatedGroupIds = relatedGroups
-                        .map(({ to }) => to)
-                        .filter((id, index, arr) => arr.findIndex((i) => `${i}` === `${id}`) === index);
+                const relatedGroupIds = relatedGroups
+                    .map(({ to }) => to)
+                    .filter((id, index, arr) => arr.findIndex((i) => `${i}` === `${id}`) === index);
 
-                    const query = { targetRoles, from: new Date() };
-                    const news = await NewsService.getByGroupIds(relatedGroupIds, requestorRoles, query, true);
+                const news = await NewsService.getByGroupIds(relatedGroupIds, requestorRoles, query, true);
 
-                    return res.status(200).json({
-                        code: RESPONSE_CODE.SUCCESS,
-                        message: RESPONSE_MESSAGE.SUCCESS,
-                        data: news,
-                    });
-                }
+                return res.status(200).json({
+                    code: RESPONSE_CODE.SUCCESS,
+                    message: RESPONSE_MESSAGE.SUCCESS,
+                    data: news,
+                });
             }, DEFAULT_NEWS_POLLING_INTERVAL);
         } catch (err) {
             next(err);

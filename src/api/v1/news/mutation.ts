@@ -2,6 +2,7 @@ import mongooat from "../../../database/db.js";
 import ApiController from "../../apiController.js";
 import NewsService from "../../../services/internal/news.js";
 import ImgbbService from "../../../services/external/imgbb.js";
+import ProfileService from "../../../services/internal/profile.js";
 import AccessControlService from "../../../services/external/accessControl.js";
 import { PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
 
@@ -92,13 +93,10 @@ export const updateById = ApiController.callbackFactory<
             let news: IResNews | undefined = undefined;
             await session.withTransaction(async () => {
                 const { creatorId, ...updatedNews } = await NewsService.updateById(id, body, { session });
+
+                if (`${creatorId}` !== `${_id}`) throw new ForbiddenError("Cannot update news created by others");
                 if (`${updatedNews.groupId}` !== groupId)
                     throw new ConflictError("News's groupId does not match the request.");
-
-                const highestRole = AccessControlService.getHighestPriorityRole(requestorRoles);
-
-                if (highestRole === PROFILE_ROLE.TEACHER && `${creatorId}` !== `${_id}`)
-                    throw new ForbiddenError("Cannot update news created by other teachers");
 
                 news = { ...updatedNews, creator: { _id, displayName, avatarUrl } };
             });
@@ -130,18 +128,29 @@ export const deleteById = ApiController.callbackFactory<{ groupId: string; id: s
 
             let news: INews | undefined = undefined;
             await session.withTransaction(async () => {
-                const deletedNews = await NewsService.deleteById(id);
+                const deletedNews = await NewsService.deleteById(id, { session });
                 if (`${deletedNews.groupId}` !== groupId)
                     throw new ConflictError("News's groupId does not match the request.");
 
                 const { _id, roles } = req.ctx.profile!;
-                const requestorRoles = AccessControlService.getRolesFromId(roles);
-                const highestRole = AccessControlService.getHighestPriorityRole(requestorRoles);
-
-                if (highestRole === PROFILE_ROLE.TEACHER && `${deletedNews.creatorId}` !== `${_id}`)
-                    throw new ForbiddenError("Cannot delete news created by other teachers");
-
                 news = { ...deletedNews };
+
+                if (`${deletedNews.creatorId}` !== `${_id}`) {
+                    const creator = await ProfileService.getByIds(deletedNews.creatorId);
+                    if (!creator) return;
+
+                    const creatorRoles = AccessControlService.getRolesFromId(creator.roles);
+                    const creatorHighestRole = AccessControlService.getHighestPriorityRole(creatorRoles);
+
+                    if ([PROFILE_ROLE.PARENT, PROFILE_ROLE.STUDENT].includes(creatorHighestRole))
+                        throw new ForbiddenError("Cannot delete news created by others");
+
+                    const requestorRoles = AccessControlService.getRolesFromId(roles);
+                    const requestorHighestRole = AccessControlService.getHighestPriorityRole(requestorRoles);
+
+                    if (AccessControlService.compare(requestorHighestRole, creatorHighestRole) <= 0)
+                        throw new ForbiddenError("Cannot delete news created by others");
+                }
             });
             if (!news)
                 throw new ServiceResponseError("AcademicService", "News: deleteById", "Failed to delete news", {

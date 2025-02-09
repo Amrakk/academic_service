@@ -22,16 +22,18 @@ export namespace IResGetAll {
     }
 }
 
+interface ICreator {
+    _id: ObjectId;
+    displayName: string;
+    avatarUrl: string;
+}
+
 export interface IResNews {
     _id: ObjectId;
     content: string;
     imageUrl?: string;
     targetRoles: ObjectId[];
-    creator: {
-        _id: ObjectId;
-        displayName: string;
-        avatarUrl: string;
-    };
+    creator: ICreator;
     groupId: ObjectId;
     updatedAt: Date;
     createdAt: Date;
@@ -41,11 +43,7 @@ export interface IResComment {
     _id: ObjectId;
     newsId: ObjectId;
     content: string;
-    creator: {
-        _id: ObjectId;
-        displayName: string;
-        avatarUrl: string;
-    };
+    creator: ICreator;
     updatedAt: Date;
     createdAt: Date;
 }
