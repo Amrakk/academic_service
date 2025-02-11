@@ -1,3 +1,4 @@
+import GradeService from "./grade.js";
 import { z, ZodObjectId, ObjectId } from "mongooat";
 import { SubjectModel } from "../../database/models/subject.js";
 
@@ -103,5 +104,28 @@ export default class SubjectService {
         if (!subject) throw new NotFoundError("Subject not found");
 
         return subject;
+    }
+
+    public static async deleteByClassId(
+        classId: (string | ObjectId)[],
+        options: { session: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(classId);
+        if (result.error) throw new BadRequestError("Invalid classId", { error: result.error.errors });
+
+        const subjectToDelete = await SubjectModel.find(
+            { classId: { $in: result.data } },
+            { session: options?.session }
+        );
+        const deletedIds = subjectToDelete.map(({ _id }) => _id);
+        const gradeTypes = subjectToDelete
+            .flatMap(({ gradeTypes }) => gradeTypes.map(({ _id }) => _id))
+            .filter((id, index, self) => self.indexOf(id) === index);
+
+        if (deletedIds.length > 0)
+            await Promise.all([
+                GradeService.deleteBySubjectId(gradeTypes, { session: options?.session }),
+                SubjectModel.deleteMany({ _id: { $in: deletedIds } }, { session: options?.session }),
+            ]);
     }
 }

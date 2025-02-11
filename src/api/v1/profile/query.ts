@@ -1,6 +1,7 @@
 import ApiController from "../../apiController.js";
 import { ValidateError, z, ZodObjectId } from "mongooat";
 import ProfileService from "../../../services/internal/profile.js";
+import { groupTypeSchema } from "../../../database/models/profile.js";
 import { PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
 
 import NotFoundError from "../../../errors/NotFoundError.js";
@@ -8,7 +9,6 @@ import ServiceResponseError from "../../../errors/ServiceResponseError.js";
 
 import type { IReqProfile } from "../../../interfaces/api/request.js";
 import type { IProfile } from "../../../interfaces/database/profile.js";
-import { groupTypeSchema } from "../../../database/models/profile.js";
 
 const querySchema = z
     .object({

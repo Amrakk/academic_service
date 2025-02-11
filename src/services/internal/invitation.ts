@@ -58,15 +58,23 @@ export default class InvitationService {
         return code;
     }
 
-    public static async removeCode(groupId: string | ObjectId): Promise<void> {
+    public static async removeCode(groupId: string | ObjectId): Promise<void>;
+    public static async removeCode(groupId: (string | ObjectId)[]): Promise<void>;
+    public static async removeCode(groupId: string | ObjectId | (string | ObjectId)[]): Promise<void> {
         const cache = redis.getRedis();
-        const code = await cache.get(`${this.groupCodePrefix}${groupId}`);
-        if (!code) return;
 
-        await Promise.all([
-            cache.del(`${this.groupCodePrefix}${code}`),
-            cache.del(`${this.groupCodePrefix}${groupId}`),
-        ]);
+        const ids = [groupId].flat();
+        const promises: Promise<any>[] = [];
+
+        ids.forEach(async (id) => {
+            const code = await cache.get(`${this.groupCodePrefix}${id}`);
+            if (!code) return;
+
+            promises.push(cache.del(`${this.groupCodePrefix}${id}`));
+            promises.push(cache.del(`${this.groupCodePrefix}${code}`));
+        });
+
+        await Promise.all(promises);
     }
 
     public static async getInvitationData(code: string): Promise<InvitationCodeData> {
@@ -135,5 +143,25 @@ export default class InvitationService {
 
         if (!invitation) throw new NotFoundError("Invitation not found");
         return invitation;
+    }
+
+    public static async deleteInvitationsByGroupId(
+        groupId: (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(groupId);
+        if (result.error) throw new BadRequestError("Invalid groupId", { error: result.error.errors });
+
+        await InvitationModel.deleteMany({ groupId: { $in: result.data } }, { session: options?.session });
+    }
+
+    public static async deleteInvitationsByProfileId(
+        profileId: (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(profileId);
+        if (result.error) throw new BadRequestError("Invalid profileId", { error: result.error.errors });
+
+        await InvitationModel.deleteMany({ profileId: { $in: result.data } }, { session: options?.session });
     }
 }

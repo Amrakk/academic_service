@@ -1,9 +1,14 @@
 import { ObjectId } from "mongooat";
 import mongooat from "../../../database/db.js";
 import ApiController from "../../apiController.js";
+import NewsService from "../../../services/internal/news.js";
 import ClassService from "../../../services/internal/class.js";
+import PartyService from "../../../services/internal/party.js";
 import SchoolService from "../../../services/internal/school.js";
+import SubjectService from "../../../services/internal/subject.js";
 import ProfileService from "../../../services/internal/profile.js";
+import RollCallService from "../../../services/internal/rollCall.js";
+import InvitationService from "../../../services/internal/invitation.js";
 import AccessControlService from "../../../services/external/accessControl.js";
 import { GROUP_TYPE, PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
 
@@ -135,7 +140,14 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ISch
                     ClassService.deleteBySchoolId(id, { session }),
                 ]);
 
-                // TODO: remove class contents(invitation, party, rollcall, etc.)
+                await Promise.all([
+                    InvitationService.removeCode([id, ...classIds]),
+                    PartyService.deleteByClassId(classIds, { session }),
+                    SubjectService.deleteByClassId(classIds, { session }),
+                    NewsService.deleteByGroupId([id, ...classIds], { session }),
+                    RollCallService.deleteRollCallSessionByClassId(classIds, { session }),
+                    InvitationService.deleteInvitationsByGroupId([id, ...classIds], { session }),
+                ]);
 
                 if (profileIds.length > 0) await AccessControlService.deleteRelationshipByProfileIds(profileIds);
 

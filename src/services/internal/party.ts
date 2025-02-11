@@ -5,9 +5,9 @@ import { toLowerNonAccentVietnamese } from "../../utils/removeDiacritics.js";
 import NotFoundError from "../../errors/NotFoundError.js";
 import BadRequestError from "../../errors/BadRequestError.js";
 
-import type { ClientSession, FilterOperators, ObjectId } from "mongodb";
 import type { IParty } from "../../interfaces/database/party.js";
 import type { IReqParty } from "../../interfaces/api/request.js";
+import type { ClientSession, FilterOperators, ObjectId } from "mongodb";
 
 export default class PartyService {
     // Query
@@ -107,6 +107,20 @@ export default class PartyService {
         return party;
     }
 
+    public static async removeMembersFromAllParties(
+        members: (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ) {
+        const membersResult = await z.array(ZodObjectId).safeParseAsync(members);
+        if (membersResult.error) throw new BadRequestError("Invalid member ids", { error: membersResult.error });
+
+        return PartyModel.collection.updateMany(
+            { memberIds: { $in: membersResult.data } },
+            { $pull: { memberIds: { $in: membersResult.data } } as FilterOperators<ObjectId[]> },
+            { session: options?.session }
+        );
+    }
+
     public static async deleteById(id: string | ObjectId, options?: { session?: ClientSession }): Promise<IParty> {
         const result = await ZodObjectId.safeParseAsync(id);
         if (result.error) throw new NotFoundError("Party not found");
@@ -115,5 +129,15 @@ export default class PartyService {
         if (!party) throw new NotFoundError("Party not found");
 
         return party;
+    }
+
+    public static async deleteByClassId(
+        classId: (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(classId);
+        if (result.error) throw new BadRequestError("Invalid classId", { error: result.error });
+
+        await PartyModel.deleteMany({ classId: { $in: result.data } }, { session: options?.session });
     }
 }
