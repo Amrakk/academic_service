@@ -1,10 +1,16 @@
 import mongooat from "../../../database/db.js";
 import ApiController from "../../apiController.js";
 import { ObjectId, z, ZodObjectId } from "mongooat";
+import NewsService from "../../../services/internal/news.js";
 import ClassService from "../../../services/internal/class.js";
+import PartyService from "../../../services/internal/party.js";
+import GradeService from "../../../services/internal/grade.js";
 import SchoolService from "../../../services/internal/school.js";
 import ProfileService from "../../../services/internal/profile.js";
+import CommentService from "../../../services/internal/comment.js";
+import RollCallService from "../../../services/internal/rollCall.js";
 import { groupTypeSchema } from "../../../database/models/profile.js";
+import InvitationService from "../../../services/internal/invitation.js";
 import AccessControlService from "../../../services/external/accessControl.js";
 import { GROUP_TYPE, PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
 
@@ -252,7 +258,15 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, IPro
 
             let profile: IProfile | undefined;
             await session.withTransaction(async () => {
-                const target = await ProfileService.deleteById(id, { session });
+                const [target] = await Promise.all([
+                    ProfileService.deleteById(id, { session }),
+                    NewsService.deleteByCreatorId([id], { session }),
+                    GradeService.deleteByStudentId([id], { session }),
+                    CommentService.deleteByCreatorId([id], { session }),
+                    PartyService.removeMembersFromAllParties([id], { session }),
+                    InvitationService.deleteInvitationsByProfileId([id], { session }),
+                    RollCallService.deleteRollCallEntryByStudentId([id], { session }),
+                ]);
 
                 const group = await (target.groupType === GROUP_TYPE.SCHOOL
                     ? SchoolService.getById(target.groupId, { session })

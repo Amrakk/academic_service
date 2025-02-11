@@ -1,4 +1,4 @@
-import { ZodObjectId } from "mongooat";
+import { z, ZodObjectId } from "mongooat";
 import { GET_GRADE_ID_TYPE } from "../../constants.js";
 import { GradeModel } from "../../database/models/grade.js";
 
@@ -74,5 +74,35 @@ export default class GradeService {
         if (!grade) throw new NotFoundError("Grade not found");
 
         return grade;
+    }
+
+    public static async deleteByGradeType(
+        gradeTypeId: (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(gradeTypeId);
+        if (result.error) throw new BadRequestError("Invalid gradeTypeId", { error: result.error.errors });
+
+        await GradeModel.deleteMany({ gradeTypeId: { $in: result.data } }, { session: options?.session });
+    }
+
+    public static async deleteBySubjectId(
+        subjectId: (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(subjectId);
+        if (result.error) throw new BadRequestError("Invalid subjectId", { error: result.error.errors });
+
+        await GradeModel.deleteMany({ subjectId: { $in: result.data } }, { session: options?.session });
+    }
+
+    public static async deleteByStudentId(
+        studentId: (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(studentId);
+        if (result.error) throw new BadRequestError("Invalid studentId", { error: result.error.errors });
+
+        await GradeModel.deleteMany({ studentId: { $in: result.data } }, { session: options?.session });
     }
 }

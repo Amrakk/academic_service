@@ -2,6 +2,7 @@ import mongooat from "../../../database/db.js";
 import ApiController from "../../apiController.js";
 import NewsService from "../../../services/internal/news.js";
 import ImgbbService from "../../../services/external/imgbb.js";
+import CommentService from "../../../services/internal/comment.js";
 import ProfileService from "../../../services/internal/profile.js";
 import AccessControlService from "../../../services/external/accessControl.js";
 import { PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
@@ -128,7 +129,10 @@ export const deleteById = ApiController.callbackFactory<{ groupId: string; id: s
 
             let news: INews | undefined = undefined;
             await session.withTransaction(async () => {
-                const deletedNews = await NewsService.deleteById(id, { session });
+                const [deletedNews] = await Promise.all([
+                    NewsService.deleteById(id, { session }),
+                    CommentService.deleteByNewsId([id], { session }),
+                ]);
                 if (`${deletedNews.groupId}` !== groupId)
                     throw new ConflictError("News's groupId does not match the request.");
 

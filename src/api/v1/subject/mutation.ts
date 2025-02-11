@@ -1,6 +1,7 @@
 import { ObjectId } from "mongooat";
 import mongooat from "../../../database/db.js";
 import ApiController from "../../apiController.js";
+import GradeService from "../../../services/internal/grade.js";
 import SubjectService from "../../../services/internal/subject.js";
 import { PROFILE_ROLE, RELATIONSHIP, RESPONSE_CODE, RESPONSE_MESSAGE } from "../../../constants.js";
 
@@ -134,8 +135,10 @@ export const removeGradeTypes = ApiController.callbackFactory<
 
             let subject: ISubject | undefined = undefined;
             await session.withTransaction(async () => {
-                // TODO: remove grade content
-                const updatedSubject = await SubjectService.removeGradeTypes(id, body.gradeTypes, { session });
+                const [updatedSubject] = await Promise.all([
+                    SubjectService.removeGradeTypes(id, body.gradeTypes, { session }),
+                    GradeService.deleteByGradeType(body.gradeTypes, { session }),
+                ]);
 
                 if (`${updatedSubject.classId}` !== classId)
                     throw new ConflictError("Subject's classId does not match the request.");
@@ -176,8 +179,10 @@ export const deleteById = ApiController.callbackFactory<{ classId: string; id: s
 
             let subject: ISubject | undefined = undefined;
             await session.withTransaction(async () => {
-                // TODO: remove grade/subject content
-                const deletedSubject = await SubjectService.deleteById(id, { session });
+                const [deletedSubject] = await Promise.all([
+                    SubjectService.deleteById(id, { session }),
+                    GradeService.deleteBySubjectId([id], { session }),
+                ]);
 
                 if (`${deletedSubject.classId}` !== classId)
                     throw new ConflictError("Subject's classId does not match the request.");

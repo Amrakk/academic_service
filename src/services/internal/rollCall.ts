@@ -6,6 +6,7 @@ import NotFoundError from "../../errors/NotFoundError.js";
 import BadRequestError from "../../errors/BadRequestError.js";
 
 import type { ObjectId } from "mongooat";
+import type { ClientSession } from "mongodb";
 import type { IReqRollCall } from "../../interfaces/api/request.js";
 import type { IRollCallEntry, IRollCallSession } from "../../interfaces/database/rollCall.js";
 
@@ -153,5 +154,35 @@ export default class RollCallService {
         if (!entry) throw new NotFoundError("Roll-call entry not found");
 
         return entry;
+    }
+
+    public static async deleteRollCallEntryByStudentId(
+        studentId: (string | ObjectId)[],
+        options: { session: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(studentId);
+        if (result.error) throw new NotFoundError("Student not found");
+
+        await RollCallEntryModel.deleteMany({ profileId: { $in: result.data } }, { session: options?.session });
+    }
+
+    public static async deleteRollCallSessionByClassId(
+        classId: (string | ObjectId)[],
+        options: { session: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(classId);
+        if (result.error) throw new NotFoundError("Class not found");
+
+        const classToDelete = await RollCallSessionModel.find(
+            { classId: { $in: result.data } },
+            { session: options.session }
+        );
+        const sessionIds = classToDelete.map(({ _id }) => _id);
+
+        if (sessionIds.length > 0)
+            await Promise.all([
+                RollCallSessionModel.deleteMany({ _id: { $in: sessionIds } }, { session: options?.session }),
+                RollCallEntryModel.deleteMany({ sessionId: { $in: sessionIds } }, { session: options?.session }),
+            ]);
     }
 }

@@ -1,4 +1,5 @@
-import { ZodObjectId } from "mongooat";
+import CommentService from "./comment.js";
+import { z, ZodObjectId } from "mongooat";
 import { PROFILE_ROLE } from "../../constants.js";
 import { NewsModel } from "../../database/models/news.js";
 import AccessControlService from "../external/accessControl.js";
@@ -177,5 +178,39 @@ export default class NewsService {
         if (!news) throw new NotFoundError("News not found");
 
         return news;
+    }
+
+    public static async deleteByCreatorId(
+        creatorId: (string | ObjectId)[],
+        options: { session: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(creatorId);
+        if (result.error) throw new BadRequestError("Invalid creatorId", { error: result.error.errors });
+
+        const newsToDelete = await NewsModel.find({ creatorId: { $in: result.data } }, { session: options?.session });
+        const deletedIds = newsToDelete.map(({ _id }) => _id);
+
+        if (deletedIds.length > 0)
+            await Promise.all([
+                CommentService.deleteByNewsId(deletedIds, { session: options?.session }),
+                NewsModel.deleteMany({ _id: { $in: deletedIds } }, { session: options?.session }),
+            ]);
+    }
+
+    public static async deleteByGroupId(
+        groupId: (string | ObjectId)[],
+        options: { session: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(groupId);
+        if (result.error) throw new BadRequestError("Invalid groupId", { error: result.error.errors });
+
+        const newsToDelete = await NewsModel.find({ groupId: { $in: result.data } }, { session: options?.session });
+        const deletedIds = newsToDelete.map(({ _id }) => _id);
+
+        if (deletedIds.length > 0)
+            await Promise.all([
+                CommentService.deleteByNewsId(deletedIds, { session: options?.session }),
+                NewsModel.deleteMany({ _id: { $in: deletedIds } }, { session: options?.session }),
+            ]);
     }
 }

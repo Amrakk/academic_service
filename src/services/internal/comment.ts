@@ -1,7 +1,8 @@
-import { ZodObjectId } from "mongooat";
+import { z, ZodObjectId } from "mongooat";
 import { CommentModel } from "../../database/models/comment.js";
 
 import NotFoundError from "../../errors/NotFoundError.js";
+import BadRequestError from "../../errors/BadRequestError.js";
 
 import type { ClientSession, ObjectId } from "mongodb";
 import type { IResComment } from "../../interfaces/api/response.js";
@@ -79,7 +80,19 @@ export default class CommentService {
         return comment;
     }
 
-    public static async deleteById(id: string | ObjectId, options?: { session?: ClientSession }): Promise<IComment> {
+    public static async deleteById(id: string | ObjectId, options?: { session?: ClientSession }): Promise<IComment>;
+    public static async deleteById(id: (string | ObjectId)[], options?: { session?: ClientSession }): Promise<void>;
+    public static async deleteById(
+        id: string | ObjectId | (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ): Promise<IComment | void> {
+        if (Array.isArray(id)) {
+            const result = await z.array(ZodObjectId).safeParseAsync(id);
+            if (result.error) throw new NotFoundError("Comment not found");
+
+            await CommentModel.deleteMany({ _id: { $in: result.data } }, { session: options?.session });
+            return;
+        }
         const result = await ZodObjectId.safeParseAsync(id);
         if (result.error) throw new NotFoundError("Comment not found");
 
@@ -87,5 +100,25 @@ export default class CommentService {
         if (!comment) throw new NotFoundError("Comment not found");
 
         return comment;
+    }
+
+    public static async deleteByNewsId(
+        newsId: (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(newsId);
+        if (result.error) throw new NotFoundError("News not found");
+
+        await CommentModel.deleteMany({ newsId: { $in: result.data } }, { session: options?.session });
+    }
+
+    public static async deleteByCreatorId(
+        creatorId: (string | ObjectId)[],
+        options?: { session?: ClientSession }
+    ): Promise<void> {
+        const result = await z.array(ZodObjectId).safeParseAsync(creatorId);
+        if (result.error) throw new BadRequestError("Creator not found", { error: result.error.errors });
+
+        await CommentModel.deleteMany({ creatorId: { $in: result.data } }, { session: options?.session });
     }
 }
