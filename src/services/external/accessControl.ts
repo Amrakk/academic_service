@@ -359,7 +359,7 @@ export default class AccessControlService {
             });
     }
 
-    public static async upsertRelationships(data: IReqRelationship.Upsert[]) {
+    public static async upsertRelationships(data: IReqRelationship.UpsertDel[]) {
         return fetch(`${ACCESS_CONTROL_API_URL}/relationships`, {
             headers: {
                 "Content-Type": "application/json",
@@ -414,6 +414,26 @@ export default class AccessControlService {
                         "AccessControlService",
                         "deleteRelationshipByIds",
                         "Failed to delete relationships",
+                        res
+                    );
+            });
+    }
+
+    public static async deleteByFromToRelationship(data: IReqRelationship.UpsertDel[]): Promise<void> {
+        return fetch(`${ACCESS_CONTROL_API_URL}/relationships/by-from-to-rel`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "DELETE",
+            body: JSON.stringify(data),
+        })
+            .then((res) => res.json())
+            .then((res: IResponse) => {
+                if (res.code !== RESPONSE_CODE.SUCCESS)
+                    throw new ServiceResponseError(
+                        "AccessControlService",
+                        "establishRelationship",
+                        "Failed to establish relationship",
                         res
                     );
             });

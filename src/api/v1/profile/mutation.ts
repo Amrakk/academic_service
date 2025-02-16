@@ -231,6 +231,92 @@ export const updateAvatar = ApiController.callbackFactory<{ id: string }, {}, { 
     },
 });
 
+export const addParentStudentRel = ApiController.callbackFactory<
+    { parentId: string },
+    { body: { childIds: (string | ObjectId)[] } },
+    {}
+>({
+    action: "add-parent-student-rel",
+    roleRelationshipPairs: [{ role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.SUPERVISES_PARENTS] }],
+    toId: async (req) => req.params.parentId,
+    callback: async (req, res, next) => {
+        try {
+            const { parentId } = req.params;
+            const { body } = req;
+            const requestor = req.ctx.profile;
+
+            if (!requestor)
+                throw new ServiceResponseError(
+                    "AcademicService",
+                    "Profile: addParentStudentRel",
+                    "Requestor is undefined",
+                    {
+                        requestor,
+                    }
+                );
+
+            const childProfiles = await ProfileService.getByIds(body.childIds);
+            if (childProfiles.length !== body.childIds.length) throw new NotFoundError("Child profiles not found");
+
+            const childRoles = childProfiles.map((child) => AccessControlService.getRolesFromId(child.roles));
+            if (childRoles.some((roles) => !roles.includes(PROFILE_ROLE.STUDENT)))
+                throw new BadRequestError("Child profiles must have student role");
+
+            await ProfileService.addParentStudentRel(
+                parentId,
+                childProfiles.map(({ _id }) => _id)
+            );
+
+            return res.status(200).json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS });
+        } catch (err) {
+            next(err);
+        }
+    },
+});
+
+export const removeParentStudentRel = ApiController.callbackFactory<
+    { parentId: string },
+    { body: { childIds: (string | ObjectId)[] } },
+    {}
+>({
+    action: "remove-parent-student-rel",
+    roleRelationshipPairs: [{ role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.SUPERVISES_PARENTS] }],
+    toId: async (req) => req.params.parentId,
+    callback: async (req, res, next) => {
+        try {
+            const { parentId } = req.params;
+            const { body } = req;
+            const requestor = req.ctx.profile;
+
+            if (!requestor)
+                throw new ServiceResponseError(
+                    "AcademicService",
+                    "Profile: addParentStudentRel",
+                    "Requestor is undefined",
+                    {
+                        requestor,
+                    }
+                );
+
+            const childProfiles = await ProfileService.getByIds(body.childIds);
+            if (childProfiles.length !== body.childIds.length) throw new NotFoundError("Child profiles not found");
+
+            const childRoles = childProfiles.map((child) => AccessControlService.getRolesFromId(child.roles));
+            if (childRoles.some((roles) => !roles.includes(PROFILE_ROLE.STUDENT)))
+                throw new BadRequestError("Child profiles must have student role");
+
+            await ProfileService.removeParentStudentRel(
+                parentId,
+                childProfiles.map(({ _id }) => _id)
+            );
+
+            return res.status(200).json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS });
+        } catch (err) {
+            next(err);
+        }
+    },
+});
+
 export const deleteById = ApiController.callbackFactory<{ id: string }, {}, IProfile>({
     action: "delete-profile",
     roleRelationshipPairs: [

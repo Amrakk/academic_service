@@ -40,7 +40,7 @@ export const insert = ApiController.callbackFactory<
                 schoolId,
             }));
 
-            const relationships: IReqRelationship.Upsert[] = [];
+            const relationships: IReqRelationship.UpsertDel[] = [];
 
             let returnedClasses: IClass[] = [];
             let creator: (IReqProfile.Insert & { _id: ObjectId }) | null = null;
@@ -67,6 +67,11 @@ export const insert = ApiController.callbackFactory<
                             relationship: RELATIONSHIP.MANAGES,
                         }))
                     );
+                    relationships.push({
+                        from: scopeCreator._id,
+                        to: scopeCreator._id,
+                        relationship: RELATIONSHIP.OWN,
+                    });
                 } else {
                     // Case 2: School class
                     const [executives, school] = await Promise.all([

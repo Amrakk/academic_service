@@ -16,6 +16,24 @@ import type { IReqProfile } from "../../interfaces/api/request.js";
 import type { IProfile } from "../../interfaces/database/profile.js";
 
 export default class ProfileService {
+    private static readonly profileRelationships: Record<PROFILE_ROLE, Partial<Record<PROFILE_ROLE, RELATIONSHIP>>> = {
+        [PROFILE_ROLE.EXECUTIVE]: {
+            [PROFILE_ROLE.TEACHER]: RELATIONSHIP.SUPERVISES_TEACHERS,
+            [PROFILE_ROLE.STUDENT]: RELATIONSHIP.TEACHES,
+            [PROFILE_ROLE.PARENT]: RELATIONSHIP.SUPERVISES_PARENTS,
+        },
+        [PROFILE_ROLE.TEACHER]: {
+            [PROFILE_ROLE.STUDENT]: RELATIONSHIP.TEACHES,
+            [PROFILE_ROLE.PARENT]: RELATIONSHIP.SUPERVISES_PARENTS,
+        },
+        [PROFILE_ROLE.STUDENT]: {
+            [PROFILE_ROLE.PARENT]: RELATIONSHIP.GUARDED_BY,
+        },
+        [PROFILE_ROLE.PARENT]: {
+            [PROFILE_ROLE.STUDENT]: RELATIONSHIP.PARENT_OF,
+        },
+    };
+
     public static async isProfileExists(id: ObjectId, options?: { session?: ClientSession }): Promise<boolean>;
     public static async isProfileExists(ids: ObjectId[], options?: { session?: ClientSession }): Promise<boolean>;
     public static async isProfileExists(
@@ -23,6 +41,10 @@ export default class ProfileService {
         options?: { session?: ClientSession }
     ): Promise<boolean> {
         return isIdsExist(ProfileModel, Array.isArray(ids) ? ids : [ids], options);
+    }
+
+    public static getRelationshipByRoles(roleA: PROFILE_ROLE, roleB: PROFILE_ROLE): RELATIONSHIP | null {
+        return ProfileService.profileRelationships[roleA]?.[roleB] ?? null;
     }
 
     public static async establishRels(profiles: IProfile[], groupType: GROUP_TYPE, groupId: ObjectId): Promise<void> {
@@ -178,6 +200,31 @@ export default class ProfileService {
         return profile;
     }
 
+    public static async getRelated(id: string | ObjectId, query?: IReqProfile.Query): Promise<IProfile[]> {
+        const { roles } = query || {};
+
+        const result = await ZodObjectId.safeParseAsync(id);
+        if (!result.success) throw new NotFoundError("Profile not found");
+
+        const defaultRoles = [PROFILE_ROLE.EXECUTIVE, PROFILE_ROLE.PARENT, PROFILE_ROLE.TEACHER, PROFILE_ROLE.STUDENT];
+        const queryRoles = roles?.length ? roles : defaultRoles;
+
+        const relationships = queryRoles
+            .flatMap((role) =>
+                defaultRoles.flatMap((targetRole) => [
+                    ProfileService.getRelationshipByRoles(role, targetRole),
+                    ProfileService.getRelationshipByRoles(targetRole, role),
+                ])
+            )
+            .filter((relationship): relationship is RELATIONSHIP => relationship !== null);
+
+        const relQuery = { relationships };
+        const relatedProfiles = await AccessControlService.getRelationshipsByTo(result.data, relQuery);
+        const profileIds = relatedProfiles.map(({ from }) => from);
+
+        return ProfileModel.find({ _id: { $in: profileIds } }, { projection: { _displayName: 0 } });
+    }
+
     // Mutation
     public static async insert(
         data: IReqProfile.Insert[],
@@ -237,6 +284,44 @@ export default class ProfileService {
 
         if (updateResult.matchedCount === 0) throw new NotFoundError("Profile not found");
         return url;
+    }
+
+    public static async addParentStudentRel(parentId: string | ObjectId, studentIds: ObjectId[]): Promise<void> {
+        const relData = studentIds
+            .map((studentId) => [
+                {
+                    from: parentId,
+                    to: studentId,
+                    relationship: RELATIONSHIP.PARENT_OF,
+                },
+                {
+                    from: studentId,
+                    to: parentId,
+                    relationship: RELATIONSHIP.GUARDED_BY,
+                },
+            ])
+            .flat();
+
+        await AccessControlService.upsertRelationships(relData);
+    }
+
+    public static async removeParentStudentRel(parentId: string | ObjectId, studentIds: ObjectId[]): Promise<void> {
+        const relData = studentIds
+            .map((studentId) => [
+                {
+                    from: parentId,
+                    to: studentId,
+                    relationship: RELATIONSHIP.PARENT_OF,
+                },
+                {
+                    from: studentId,
+                    to: parentId,
+                    relationship: RELATIONSHIP.GUARDED_BY,
+                },
+            ])
+            .flat();
+
+        await AccessControlService.deleteByFromToRelationship(relData);
     }
 
     public static async deleteById(id: string | ObjectId, options?: { session?: ClientSession }): Promise<IProfile> {

@@ -22,6 +22,11 @@ export default class ClassService {
             toRel: RELATIONSHIP.ASSOCIATED_WITH,
             resultRel: RELATIONSHIP.SUPERVISES_PARENTS,
         },
+        {
+            fromRel: RELATIONSHIP.MANAGES,
+            toRel: RELATIONSHIP.HAS_CHILD_IN,
+            resultRel: RELATIONSHIP.SUPERVISES_PARENTS,
+        },
     ];
 
     public static getRelationshipByRole(role: PROFILE_ROLE): RELATIONSHIP {
