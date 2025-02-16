@@ -116,3 +116,36 @@ export const getById = ApiController.callbackFactory<{ id: string }, {}, IProfil
         }
     },
 });
+
+export const getRelated = ApiController.callbackFactory<{ id: string }, { query: IReqProfile.Query }, IProfile[]>({
+    action: "view-related-profiles",
+    roleRelationshipPairs: [
+        { role: PROFILE_ROLE.EXECUTIVE, relationships: [RELATIONSHIP.SUPERVISES_TEACHERS] },
+        {
+            role: PROFILE_ROLE.TEACHER,
+            relationships: [RELATIONSHIP.OWN, RELATIONSHIP.TEACHES, RELATIONSHIP.SUPERVISES_PARENTS],
+        },
+        { role: PROFILE_ROLE.STUDENT, relationships: [RELATIONSHIP.OWN, RELATIONSHIP.GUARDED_BY] },
+        { role: PROFILE_ROLE.PARENT, relationships: [RELATIONSHIP.OWN, RELATIONSHIP.PARENT_OF] },
+    ],
+    toId: (req) => req.params.id,
+    callback: async (req, res, next) => {
+        try {
+            const { id } = req.params;
+
+            const result = await querySchema.safeParseAsync(req.query);
+            if (result.error) throw new ValidateError("Invalid query", result.error.errors);
+
+            const profiles = await ProfileService.getRelated(id, result.data);
+            if (!profiles) throw new NotFoundError("Profile not found");
+
+            return res.status(200).json({
+                code: RESPONSE_CODE.SUCCESS,
+                message: RESPONSE_MESSAGE.SUCCESS,
+                data: profiles,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+});

@@ -11,11 +11,11 @@ x-user-role: 0
 x-user-name: Test User
 
 ### GET BY GROUP 
-GET http://localhost:3010/api/v1/profiles/0/677fd68bffe8b0fae62868b4
+GET http://localhost:3010/api/v1/profiles/1/67b1b6f78761094060981f35
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
 x-user-name: Test User
-x-profile-id: 677fd68bffe8b0fae62868b3
+x-profile-id: 67b1b6f78761094060981f36
 
 ### GET BY GROUP WITH ROLES QUERY
 GET http://localhost:3010/api/v1/profiles/1/6788f681af3d810f99f54b55?roles=Executive
@@ -32,16 +32,16 @@ x-user-name: Test User
 x-profile-id: 677fd68bffe8b0fae62868b3
 
 ### INSERT 
-POST http://localhost:3010/api/v1/profiles/0/677fd68bffe8b0fae62868b4
+POST http://localhost:3010/api/v1/profiles/1/67b1b6f78761094060981f35
 x-user-id: 6766a7b0f98d0442e37d8313
 x-user-role: 0
 x-user-name: Test User
-x-profile-id: 677fd68bffe8b0fae62868b3
+x-profile-id: 67b1b6f78761094060981f36
 Content-Type: application/json
 
 {
-  "displayName": "Test User",
-  "roles": ["Teacher"]
+  "displayName": "Test Student",
+  "roles": ["Student"]
 }
 
 ### UPDATE 
@@ -70,6 +70,37 @@ Content-Type: image/jpeg
 
 < ./images/profile_avatar.png
 ----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+### GET RELATED TO PROFILE
+GET http://localhost:3010/api/v1/profiles/677fd68bffe8b0fae62868b3/related
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 677fd68bffe8b0fae62868b3
+
+### ADD PARENT STUDENT RELATIONSHIP
+POST http://localhost:3010/api/v1/profiles/67b1b74f8761094060981f37/rels
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 67b1b6f78761094060981f36
+Content-Type: application/json
+
+{
+  "childIds": ["67b1b76c8761094060981f38"]
+}
+
+### REMOVE PARENT STUDENT RELATIONSHIP
+DELETE http://localhost:3010/api/v1/profiles/67b1b74f8761094060981f37/rels
+x-user-id: 6766a7b0f98d0442e37d8313
+x-user-role: 0
+x-user-name: Test User
+x-profile-id: 67b1b6f78761094060981f36
+Content-Type: application/json
+
+{
+  "childIds": ["67b1b76c8761094060981f38"]
+}
 
 ### DELETE
 DELETE http://localhost:3010/api/v1/profiles/6777687824ab2afd5c9a71e8

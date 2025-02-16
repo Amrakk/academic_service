@@ -50,6 +50,11 @@ export const insert = ApiController.callbackFactory<{}, { body: IReqSchool.Inser
                             to: schoolId,
                             relationship: RELATIONSHIP.MANAGES,
                         },
+                        {
+                            from: creator._id,
+                            to: creator._id,
+                            relationship: RELATIONSHIP.OWN,
+                        },
                     ]),
                 ]);
 
@@ -139,7 +144,6 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ISch
                     ProfileService.deleteByGroupId(id, { session }),
                     ClassService.deleteBySchoolId(id, { session }),
                 ]);
-
                 await Promise.all([
                     InvitationService.removeCode([id, ...classIds]),
                     PartyService.deleteByClassId(classIds, { session }),
