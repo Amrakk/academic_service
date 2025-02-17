@@ -21,10 +21,10 @@ COPY . .
 RUN bun run build
 
 # copy production dependencies and source code into final image
-FROM base AS release
+FROM node:20.18-alpine AS release
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app/build/ ./src
 COPY --from=prerelease /usr/src/app/package.json .
 
 # run the app
-ENTRYPOINT [ "bun", "./src/index.js" ]
+ENTRYPOINT [ "node", "./src/index.js" ]
