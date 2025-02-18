@@ -212,7 +212,7 @@ export const deleteById = ApiController.callbackFactory<{ id: string }, {}, ICla
 
                 if (!_class.schoolId) {
                     // Case 1: Personal class
-                    const profileIds = await ProfileService.deleteByGroupId(id);
+                    const profileIds = await ProfileService.deleteByGroupId(id, { session });
                     if (profileIds.length > 0) await AccessControlService.deleteRelationshipByProfileIds(profileIds);
                 } else {
                     // Case 2: School class
