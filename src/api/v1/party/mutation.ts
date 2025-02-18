@@ -143,6 +143,8 @@ export const upsertMembers = ApiController.callbackFactory<
                 .json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS, data: party });
         } catch (err) {
             next(err);
+        } finally {
+            session.endSession();
         }
     },
 });
@@ -165,7 +167,7 @@ export const removeMembers = ApiController.callbackFactory<
 
             let party: IParty | undefined = undefined;
             await session.withTransaction(async () => {
-                const updatedParty = await PartyService.removeMembers(id, body.memberIds);
+                const updatedParty = await PartyService.removeMembers(id, body.memberIds, { session });
                 if (`${updatedParty.classId}` !== classId)
                     throw new ConflictError("Party's classId does not match the request.");
 
@@ -200,7 +202,7 @@ export const deleteById = ApiController.callbackFactory<{ classId: string; id: s
 
             let party: IParty | undefined = undefined;
             await session.withTransaction(async () => {
-                const deletedParty = await PartyService.deleteById(id);
+                const deletedParty = await PartyService.deleteById(id, { session });
                 if (`${deletedParty.classId}` !== classId)
                     throw new ConflictError("Party's classId does not match the request.");
 

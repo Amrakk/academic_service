@@ -131,7 +131,7 @@ export const deleteById = ApiController.callbackFactory<{ subjectId: string; id:
 
             let grade: IGrade | undefined = undefined;
             await session.withTransaction(async () => {
-                const deletedGrade = await GradeService.deleteById(id);
+                const deletedGrade = await GradeService.deleteById(id, { session });
                 if (`${deletedGrade.subjectId}` !== subjectId)
                     throw new ConflictError("Grade's subjectId does not match the request.");
 

@@ -69,6 +69,8 @@ export const updateById = ApiController.callbackFactory<
                 .json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS, data: subject });
         } catch (err) {
             next(err);
+        } finally {
+            session.endSession();
         }
     },
 });
@@ -113,6 +115,8 @@ export const addGradeTypes = ApiController.callbackFactory<
                 .json({ code: RESPONSE_CODE.SUCCESS, message: RESPONSE_MESSAGE.SUCCESS, data: subject });
         } catch (err) {
             next(err);
+        } finally {
+            session.endSession();
         }
     },
 });
