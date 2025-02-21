@@ -79,7 +79,16 @@ export const insert = ApiController.callbackFactory<
             let profiles: IProfile[] = [];
             await session.withTransaction(async () => {
                 const insertedProfiles = await ProfileService.insert(insertData, result.data, { session });
-                await ProfileService.establishRels(insertedProfiles, groupType, groupId);
+                const relationships = insertedProfiles.map((profile) => ({
+                    from: profile._id,
+                    to: profile._id,
+                    relationship: RELATIONSHIP.OWN,
+                }));
+
+                await Promise.all([
+                    ProfileService.establishRels(insertedProfiles, groupType, groupId),
+                    AccessControlService.upsertRelationships(relationships),
+                ]);
 
                 profiles = [...insertedProfiles];
             });
