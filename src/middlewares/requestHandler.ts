@@ -4,7 +4,6 @@ import { USER_ROLE } from "../constants.js";
 import ForbiddenError from "../errors/ForbiddenError.js";
 
 import type { Request, Response, NextFunction } from "express";
-import ProfileService from "../services/internal/profile.js";
 
 const schema = z.object({
     user: z.object({
@@ -26,7 +25,10 @@ export async function requestHandler(req: Request, res: Response, next: NextFunc
         } = req.headers;
         if (error) throw new ForbiddenError();
 
-        const result = await schema.safeParseAsync({ user: { _id: userId, role: userRole, name }, profileId });
+        const result = await schema.safeParseAsync({
+            user: { _id: userId, role: userRole, name: decodeURIComponent(`${name}`) },
+            profileId,
+        });
         if (result.error) throw new ForbiddenError();
 
         req.ctx = result.data;

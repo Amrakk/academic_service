@@ -54,7 +54,7 @@ export const insert = ApiController.callbackFactory<
                     const scopeCreator = {
                         _id: new ObjectId(),
                         userId: req.ctx.user._id,
-                        displayName: "Creator",
+                        displayName: req.ctx.user.name,
                         roles: [PROFILE_ROLE.TEACHER],
                     };
 

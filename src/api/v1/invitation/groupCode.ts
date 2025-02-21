@@ -180,14 +180,20 @@ export const submitCode = ApiController.callbackFactory<{ code: string }, {}, IP
                     const insertedProfiles = await ProfileService.insert([insertData], groupInfo, { session });
                     profile = { ...insertedProfiles[0] };
 
-                    const schoolRelations = schoolId
+                    const promises = schoolId
                         ? [
                               ProfileService.establishRels([profile], GROUP_TYPE.CLASS, groupId),
                               ProfileService.establishRels([profile], GROUP_TYPE.SCHOOL, schoolId),
                           ]
                         : [ProfileService.establishRels([profile], groupType, groupId)];
 
-                    await Promise.all(schoolRelations);
+                    promises.push(
+                        AccessControlService.upsertRelationships([
+                            { from: profile._id, to: profile._id, relationship: RELATIONSHIP.OWN },
+                        ])
+                    );
+
+                    await Promise.all(promises);
                 }
             });
 
