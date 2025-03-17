@@ -152,6 +152,7 @@ export default class ProfileService {
         const result = await ZodObjectId.safeParseAsync(groupId);
         if (result.error) throw new NotFoundError("Group not found");
 
+        groupId = result.data;
         let includeIds: (ObjectId | string)[] = [];
         if (groupType === GROUP_TYPE.CLASS) {
             const _class = await ClassService.getById(result.data);
@@ -159,26 +160,24 @@ export default class ProfileService {
 
             // Case where group is school class
             if (_class.schoolId) {
+                groupId = _class.schoolId;
                 groupType = GROUP_TYPE.SCHOOL;
                 result.data = _class.schoolId;
 
                 includeIds.push(
-                    ...(
-                        await AccessControlService.getRelationshipsByTo(_class._id, {
-                            relationships: [RELATIONSHIP.MANAGES],
-                        })
-                    ).map(({ from }) => from)
+                    ...(await AccessControlService.getRelationshipsByTo(_class._id)).map(({ from }) => `${from}`)
                 );
             }
         }
 
         const filter = {
+            groupId,
             groupType,
-            groupId: result.data,
             ...(roles ? { roles: { $in: roles?.map((role) => AccessControlService.roles[role]._id) } } : {}),
         };
-        const profiles = await ProfileModel.find(filter, { session: option?.session, projection: { _displayName: 0 } });
-        if (includeIds.length > 0) profiles.filter(({ _id }) => includeIds.includes(_id));
+
+        let profiles = await ProfileModel.find(filter, { session: option?.session, projection: { _displayName: 0 } });
+        if (includeIds.length > 0) profiles = profiles.filter(({ _id }) => includeIds.includes(`${_id}`));
 
         return profiles;
     }

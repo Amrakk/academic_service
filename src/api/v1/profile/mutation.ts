@@ -35,8 +35,10 @@ export const insert = ApiController.callbackFactory<
 >({
     action: "add-profile",
     roleRelationshipPairs: [
-        { role: PROFILE_ROLE.EXECUTIVE, relationships: [RELATIONSHIP.CREATOR] },
-        { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.MANAGES] },
+        {
+            role: PROFILE_ROLE.TEACHER,
+            relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES, RELATIONSHIP.EMPLOYED_AT],
+        },
     ],
     toId: async (req) => req.params.groupId,
     callback: async (req, res, next) => {
