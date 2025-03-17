@@ -250,7 +250,7 @@ export const bindRelationships = ApiController.callbackFactory<
 >({
     action: "bind-relationships-to-school-class",
     roleRelationshipPairs: [
-        { role: PROFILE_ROLE.EXECUTIVE, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
+        { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
     ],
     toId: async (req) => req.params.classId,
     callback: async (req, res, next) => {
@@ -278,7 +278,7 @@ export const unbindRelationships = ApiController.callbackFactory<
 >({
     action: "unbind-relationships-to-school-class",
     roleRelationshipPairs: [
-        { role: PROFILE_ROLE.EXECUTIVE, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
+        { role: PROFILE_ROLE.TEACHER, relationships: [RELATIONSHIP.CREATOR, RELATIONSHIP.MANAGES] },
     ],
     toId: async (req) => req.params.classId,
     callback: async (req, res, next) => {
